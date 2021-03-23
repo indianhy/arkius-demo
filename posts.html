@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Create three unequal columns that floats next to each other */
+        .column {
+            float: left;
+            padding: 70px;
+            height: 100%;
+            /* Should be removed. Only for demonstration */
+        }
+
+        .left,
+        .right {
+            width: 20%;
+            height: 100%;
+        }
+
+        .info {
+            max-width: 21ch;
+            margin: 0 auto;
+            margin-bottom: 18px;
+            /* background-color: #ddd; */
+            padding: 12px 24px;
+            word-wrap: break-word;
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 15px;
+        }
+
+        .infoleft {
+            max-width: 21ch;
+            margin: 0 auto;
+            margin-bottom: 18px;
+            background-color: #ddd;
+            padding: 12px 24px;
+            word-wrap: break-word;
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 15px;
+        }
+
+        .infoRight {
+            max-width: 21ch;
+            margin: 0 auto;
+            margin-bottom: 18px;
+            background-color: #ddd;
+            padding: 12px 24px;
+            word-wrap: break-word;
+            font-family: "Lucida Console", Monaco, monospace;
+            font-size: 15px;
+        }
+
+        .middle {
+            width: 60%;
+            padding: 20px;
+            color: #000;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+            width: 100%;
+            border-radius: 5px;
+            padding: 2%;
+        }
+
+        /* .card:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        } */
+
+        /* img {
+        border-radius: 5px 5px 0 0;
+        } */
+
+        .container {
+            padding-top: 20px;
+            padding-bottom: 5px;
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .container1 {
+            padding: 2px;
+        }
+    </style>
+    <script src="./postVoteabi.js"></script>
+    <script src="./Membershipabi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/magic-sdk/dist/magic.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.2.11/dist/web3.min.js"></script>
+    <script>
+        const magic = new Magic("pk_test_7967AF810E630E08", {
+            network: "rinkeby"
+        });
+        const web3 = new Web3(magic.rpcProvider);
+
+        let postVoteAddress = "0x2508b16f078e5Af0EB27d014B96bFc9fbA08D00D"; //"0x9648bf505B6748b6f98982642770614dc7B0F177";
+        let membershipAddress = "0x7b8cf4cb52fB998266dEE46830F6B08054A2468e";
+
+        let senderAccount;
+        let owner;
+        let messageId;
+        let KYCdone;
+        let userPaid;
+
+        let pVcontract = new web3.eth.Contract(
+            JSON.parse(contractABI),
+            postVoteAddress
+        );
+
+        let Memcontract = new web3.eth.Contract(
+            JSON.parse(contractABI1),
+            membershipAddress
+        );
+
+        const render = async () => {
+            const isLoggedIn = await magic.user.isLoggedIn();
+
+            /* Show login form if user is not logged in */
+            let authHtml = `
+          <div class="container">
+            <h1>Please sign up or login</h1>
+            <form onsubmit="handleLogin(event)">
+              <input type="email" name="email" required="required" placeholder="Enter your email" />
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        `;
+
+            let userHtml = "";
+            let postHtml = "";
+            let contractHtml = "";
+            let postedHtml = "";
+            let Postedmessage = "";
+
+            const target = document.querySelector("#app");
+            if (isLoggedIn) {
+                /* Get user metadata including email */
+                const userMetadata = await magic.user.getMetadata();
+                //const network = await web3.eth.net.getNetworkType();
+                const userAddress = (await web3.eth.getAccounts())[0];
+                //const userBalance = web3.utils.fromWei(
+                 //   await web3.eth.getBalance(userAddress) // Balance is in wei
+                //);
+
+                senderAccount = userAddress;
+
+                authHtml = `
+            <div class="container">
+              <h1>Current user: ${userMetadata.email}</h1>
+              <button onclick="handleLogout()">Logout</button>
+            </div>
+          `;
+        //         userHtml = `
+        //     <div class="container">
+        //       <h1>Ethereum address</h1>
+        //       <div class="info">
+        //         <a href="https://rinkeby.etherscan.io/address/${userAddress}" target="_blank">${userAddress}</a>
+        //       </div>
+        //       <h1>Network</h1>
+        //       <div class="info">${network}</div>
+        //       <h1>Balance</h1>
+        //       <div class="info">${userBalance} ETH</div>
+        //     </div>
+        //   `;
+                postHtml = `
+            
+            <form onsubmit=handleSendPost(event) class="container">
+              <div class="card">
+                <h1>Post Status</h1>
+                <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
+                <div class="container">
+                    <button type="submit" value="Post" id="post_status">Post</button>
+                </div>
+              </div>
+           `;
+
+                const currentMessage = "Arkius Membership Token"//await contract.methods.name().call();
+                const info = await Memcontract.methods.info(userAddress).call();
+                const userPaid1 = info.MemberPaid;//await Memcontract.methods.kycGetter(userAddress).call();
+                const KYCdone1 = info.MemberKYC//await Memcontract.methods.paymentGetter(userAddress).call();
+                //const currentMessage = ""//await Memcontract.methods.name().call();
+                const isMember = info.id==0?false:true//await Memcontract.methods.isMember(userAddress).call();
+                //const totalPost = await pVcontract.methods.totalPost().call();
+
+                KYCdone = KYCdone1;
+                userPaid = userPaid1;
+
+                handleDisplayStatus()//totalPost);
+            }
+            target.innerHTML =
+                authHtml + postHtml + contractHtml;
+        };
+
+
+        const setTime = async (detail) => {
+
+            var d = new Date();
+            d.setTime(detail.timestamp * 1000);
+            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            date = d.getDate();
+            month = months[d.getMonth()];
+            year = d.getFullYear();
+            day = days[d.getDay()];
+            hour = d.getHours();
+            minute = d.getMinutes();
+            timestamp = day + " " + date.toString().padStart(2, '0') + "-" + month + "-" + year + " " + hour.toString().padStart(2, '0') + ":" + minute.toString().padStart(2, '0');
+            // console.log("1", timestamp);
+            return timestamp;
+        }
+
+        const handleDisplayStatus = async () => {
+            const posts = await pVcontract.methods.totalPost().call()
+            for (var i = posts.length - 1; i >= 0; i--) {
+                const singlePost = await pVcontract.methods.pst(posts[i]).call();
+                // <p id="id"> ${posts[i]} </p>
+                const target = document.querySelector("#app");
+
+                const timestamp = await setTime(singlePost);
+
+                if (userPaid && KYCdone){
+                    contractHtml = `
+                <div class="card">
+                  <p id="id"></p>
+                  <label name="User">${singlePost.user}</label> <br>
+                  <label name="time">${timestamp}</label>
+                  <br><br>
+
+                  <div class="info">${singlePost.value}</div>
+                  <div class="container">
+                    <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvote</button>
+                    <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvote</button>
+                    <button id="vote" onclick=handleVote(${posts[i]})>Votes</button>
+                    <p id="votes${posts[i]}"></p>
+                    <textarea id="name" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:80%; padding: 1%;" ></textarea>
+                    <button id="comment" onclick=handlecomment()>Comment</button>
+                  </div>
+                </div>
+              `;
+
+              pVcontract.methods.memVote(posts[i],senderAccount).call().then(function (res){
+                  if (res.upvoted)
+                      document.getElementById(`upvote${posts[i]}`).innerText = "Upvoted"
+                  if (res.downvoted)
+                      document.getElementById(`downvote${posts[i]}`).innerText = "Downvoted"
+              });
+            
+            }
+                else
+                    contractHtml = `
+                <div class="card">
+                  <p id="id"> </p>
+                  <br><label name="User"> ${singlePost.user}<label> <br>
+                    <label name="time">${timestamp}</label>
+                  <br><br>
+                  
+                  <div class="info">${singlePost.value}</div>
+                </div>
+              `;
+                target.innerHTML = target.innerHTML + contractHtml;
+            }
+        };
+
+        // const handlePostedStatus = async e => {
+        //       // e.preventDefault();
+        //       const target = document.querySelector("#app");
+        //       if(userPaid && KYCdone)
+        //         contractHtml = `
+        //           <div class="card">
+
+        //             <p id="id"> ${messageId} </p>
+        //             <label name="User">${owner}</label> 
+        //             <br><br>
+
+        //             <div class="info">${Postedmessage}</div>
+        //             <div class="container">
+        //               <button id="upvote${messageId}" onclick=handleUpvote(${messageId})>Upvote</button>
+        //               <button id="downvote${messageId}" onclick=handleDownvote(${messageId})>Downvote</button>
+        //               <button id="vote" onclick=handleVote(${messageId})>Votes</button>
+        //               <p id="votes${messageId}"></p>
+        //             </div>
+        //           </div>
+        //         `;
+        //       else
+        //         contractHtml = `
+        //           <div class="card">
+        //             <p id="id"> ${messageId} </p>
+        //             <br><label name="User"> ${owner}<label> 
+        //             <br><br>
+
+        //             <div class="info">${Postedmessage}</div>
+        //           </div>
+        //         `;
+        //         const postStatus = document.getElementById("post_status");
+        //         postStatus.disabled = false;
+        //         postStatus.innerText = "Post";
+
+        //         // target.innerHTML = target.innerHTML + contractHtml;
+        //         render();
+        //       };
+
+        const handleUpvote = async (msg) => {
+            console.log(msg);
+            const voteButton = document.getElementById(`upvote${msg}`);
+            voteButton.disabled = true;
+            voteButton.innertext = "Upvoting";
+            await pVcontract.methods.Upvote(senderAccount, msg).send({ from: senderAccount });
+            const totalUpvotes = await pVcontract.methods.totalUpvote(senderAccount, msg).call();
+            // document.getElementById("votes").innerHTML = totalUpvotes;
+            voteButton.disabled = false;
+            voteButton.innertext = "Upvoted";
+            console.log("Voted");
+        };
+
+        const handleDownvote = async (msg) => {
+            // console.log(msg);
+            const voteButton = document.getElementById(`downvote${msg}`);
+            voteButton.disabled = true;
+            voteButton.innertext = "Downvoting";
+            await pVcontract.methods.Downvote(senderAccount, msg).send({ from: senderAccount });
+            const totalDownvotes = await pVcontract.methods.totalDownvote(senderAccount, msg).call();
+            // document.getElementById("votes").innerHTML = totalDownvotes;
+            voteButton.disabled = false;
+            voteButton.innertext = "Downvoted";
+            console.log("Voted");
+        };
+
+        const handleVote = async (msg) => {
+            // console.log(msg);
+            const totalVotes = await pVcontract.methods.totalVote(senderAccount, msg).call();
+            document.getElementById(`votes${msg}`).innerHTML = totalVotes;
+            console.log("Voted");
+        };
+
+
+        const handleLogin = async e => {
+            e.preventDefault();
+            const email = new FormData(e.target).get("email");
+            if (email) {
+                /* One-liner login 🤯 */
+                await magic.auth.loginWithMagicLink({ email });
+                render();
+            }
+        };
+
+        const handlecomment = async e => {
+            e.preventDefault();
+        }
+
+        const handleSendPost = async e => {
+            e.preventDefault();
+            const message = new FormData(e.target).get("status");
+            if (message.length > 0) {
+                // Postedmessage = message;
+                const postStatus = document.getElementById("post_status");
+                postStatus.disabled = true;
+                postStatus.innerText = "Posting...";
+                console.log("Posting");
+                await pVcontract.methods.postStatus(`${senderAccount}`, message).send({ from: senderAccount });
+                postStatus.disabled = false;
+                postStatus.innerText = "Post";
+                console.log("Posted");
+                render();
+                // let msgId = await pVcontract.methods.allPost(`${senderAccount}`).call();
+                // console.log(msgId);
+                // msgId = msgId[msgId.length-1];
+                // messageId = msgId;
+                // const own = await pVcontract.methods.statusOwner(msgId).call();
+                // console.log(own);
+                // owner = own;
+                // handlePostedStatus();
+            }
+        };
+
+        const handleLogout = async () => {
+            await magic.user.logout();
+            render();
+        };
+    </script>
+</head>
+
+<body onload="render()">
+
+    <!-- <h2>Feed</h2> -->
+
+    <div class="row">
+        <div class="column left" style="background-color:#aaa;">
+        </div>
+        <div id="app" class="column middle" style="background-color:#ddd;">
+            <div class="container">Loading...</div>
+            <!-- <div class="card">
+            <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
+            <div class="container">
+                <button type="submit" value="Post" id="post_status" onclick="">Post</button>
+            </div>
+          </div>
+          <div class="card">
+            <label for="name">Enter Id:</label>
+            <input type="number" id="name" name="name">
+            <input type="submit" value="Submit">
+            <br><br>
+            <textarea cols="40" rows="5" id="return" name="name" style="resize:none; height:120px; width:100%; padding: 5%;"></textarea>
+            <div class="container">
+              <button>Upvote</button>
+              <button>Downvote</button>
+              <button>Votes</button>
+              <id="votes"></id>
+            </div>
+          </div> -->
+        </div>
+        <div class="column right" style="background-color:#aaa;">
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -167,6 +167,86 @@ const contractABI = `[
 		"constant": true,
 		"inputs": [
 			{
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"name": "_add",
+				"type": "address"
+			}
+		],
+		"name": "getPost",
+		"outputs": [
+			{
+				"components": [
+					{
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"name": "value",
+						"type": "string"
+					},
+					{
+						"name": "upvote",
+						"type": "uint256"
+					},
+					{
+						"name": "timestamp",
+						"type": "uint256"
+					},
+					{
+						"name": "downvote",
+						"type": "uint256"
+					},
+					{
+						"name": "hasUpvoted",
+						"type": "bool"
+					},
+					{
+						"name": "hasDownvoted",
+						"type": "bool"
+					}
+				],
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "memVote",
+		"outputs": [
+			{
+				"name": "upvoted",
+				"type": "bool"
+			},
+			{
+				"name": "downvoted",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
 				"name": "user",
 				"type": "address"
 			},

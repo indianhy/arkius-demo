@@ -105,7 +105,7 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0x2508b16f078e5Af0EB27d014B96bFc9fbA08D00D"; //"0x9648bf505B6748b6f98982642770614dc7B0F177";
+        let postVoteAddress = "0xf4ed4A682255c0aB33d8E3fCf7b6c1BcaE43b26A";
         let membershipAddress = "0x7b8cf4cb52fB998266dEE46830F6B08054A2468e";
 
         let senderAccount;
@@ -204,7 +204,7 @@
         };
 
 
-        const setTime = async (detail) => {
+        const setTime = (detail) => {
 
             var d = new Date();
             d.setTime(detail.timestamp * 1000);
@@ -224,12 +224,12 @@
         const handleDisplayStatus = async () => {
             const posts = await pVcontract.methods.totalPost().call()
             for (var i = posts.length - 1; i >= 0; i--) {
-                const singlePost = await pVcontract.methods.pst(posts[i]).call();
+                const singlePost = await pVcontract.methods.getPost(posts[i], senderAccount).call();
                 // <p id="id"> ${posts[i]} </p>
                 const target = document.querySelector("#app");
 
-                const timestamp = await setTime(singlePost);
-
+                const timestamp = setTime(singlePost);     
+                    console.log({singlePost});
                 if (userPaid && KYCdone){
                     contractHtml = `
                 <div class="card">
@@ -240,8 +240,8 @@
 
                   <div class="info">${singlePost.value}</div>
                   <div class="container">
-                    <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvote</button>
-                    <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvote</button>
+                    <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                    <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
                     <button id="vote" onclick=handleVote(${posts[i]})>Votes</button>
                     <p id="votes${posts[i]}"></p>
                     <textarea id="name" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:80%; padding: 1%;" ></textarea>
@@ -250,12 +250,6 @@
                 </div>
               `;
 
-              pVcontract.methods.memVote(posts[i],senderAccount).call().then(function (res){
-                  if (res.upvoted)
-                      document.getElementById(`upvote${posts[i]}`).innerText = "Upvoted"
-                  if (res.downvoted)
-                      document.getElementById(`downvote${posts[i]}`).innerText = "Downvoted"
-              });
             
             }
                 else
@@ -272,6 +266,18 @@
                 target.innerHTML = target.innerHTML + contractHtml;
             }
         };
+
+        const hasupvoted = async ( post ) => {
+            const res = await pVcontract.methods.memVote(post,senderAccount).call();
+            console.log("1", {res});
+            return res.upvoted;
+        }
+
+        const hasdownvoted = async ( post ) => {
+            const res = await pVcontract.methods.memVote(post,senderAccount).call();
+            console.log("2", {res});
+            return res.downvoted;
+        }
 
         // const handlePostedStatus = async e => {
         //       // e.preventDefault();
@@ -314,26 +320,36 @@
         const handleUpvote = async (msg) => {
             console.log(msg);
             const voteButton = document.getElementById(`upvote${msg}`);
+            const voteButton1 = document.getElementById(`downvote${msg}`);
+            // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
             voteButton.disabled = true;
-            voteButton.innertext = "Upvoting";
+            voteButton.innerText = "Upvoting";
             await pVcontract.methods.Upvote(senderAccount, msg).send({ from: senderAccount });
-            const totalUpvotes = await pVcontract.methods.totalUpvote(senderAccount, msg).call();
+            const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+            // const totalUpvotes = await pVcontract.methods.totalUpvote(senderAccount, msg).call();
             // document.getElementById("votes").innerHTML = totalUpvotes;
             voteButton.disabled = false;
-            voteButton.innertext = "Upvoted";
+            if (!singlePost.hasDownvoted) voteButton1.innerText = "Downvote";
+            if (singlePost.hasUpvoted) voteButton.innerText = "Upvoted";
+            else voteButton.innerText = "Upvote";
             console.log("Voted");
         };
 
         const handleDownvote = async (msg) => {
             // console.log(msg);
             const voteButton = document.getElementById(`downvote${msg}`);
+            const voteButton1 = document.getElementById(`upvote${msg}`);
+            // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
             voteButton.disabled = true;
             voteButton.innertext = "Downvoting";
             await pVcontract.methods.Downvote(senderAccount, msg).send({ from: senderAccount });
-            const totalDownvotes = await pVcontract.methods.totalDownvote(senderAccount, msg).call();
+            const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+            // const totalDownvotes = await pVcontract.methods.totalDownvote(senderAccount, msg).call();
             // document.getElementById("votes").innerHTML = totalDownvotes;
             voteButton.disabled = false;
-            voteButton.innertext = "Downvoted";
+            if (!singlePost.hasUpvoted) voteButton1.innerText = "Upvote";
+            if (singlePost.hasDownvoted) voteButton.innerText = "Downvoted";
+            else voteButton.innerText = "Downvote";
             console.log("Voted");
         };
 
@@ -386,7 +402,7 @@
 
         const handleLogout = async () => {
             await magic.user.logout();
-            render();
+            window.open('./index.html', '_self', false)
         };
     </script>
 </head>

@@ -5,6 +5,10 @@ const contractABI = `[
 			{
 				"name": "_id",
 				"type": "uint256"
+			},
+			{
+				"name": "_add",
+				"type": "address"
 			}
 		],
 		"name": "deletePost",
@@ -107,56 +111,12 @@ const contractABI = `[
 	},
 	{
 		"constant": true,
-		"inputs": [
-			{
-				"name": "user",
-				"type": "address"
-			}
-		],
+		"inputs": [],
 		"name": "allPost",
 		"outputs": [
 			{
 				"name": "",
 				"type": "uint256[]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "cmnt",
-		"outputs": [
-			{
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"name": "parent",
-				"type": "uint256"
-			},
-			{
-				"name": "value",
-				"type": "string"
-			},
-			{
-				"name": "upvote",
-				"type": "uint256"
-			},
-			{
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"name": "downvote",
-				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -189,6 +149,10 @@ const contractABI = `[
 					},
 					{
 						"name": "upvote",
+						"type": "uint256"
+					},
+					{
+						"name": "parent",
 						"type": "uint256"
 					},
 					{
@@ -281,6 +245,10 @@ const contractABI = `[
 				"type": "address"
 			},
 			{
+				"name": "parent",
+				"type": "uint256"
+			},
+			{
 				"name": "value",
 				"type": "string"
 			},
@@ -314,6 +282,20 @@ const contractABI = `[
 			{
 				"name": "",
 				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totalCmnt",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]"
 			}
 		],
 		"payable": false,

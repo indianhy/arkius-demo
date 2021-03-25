@@ -23,14 +23,12 @@
         }
 
         .info {
-            max-width: 21ch;
             margin: 0 auto;
-            margin-bottom: 18px;
-            /* background-color: #ddd; */
-            padding: 12px 24px;
+            background-color: #ddd;
+            padding: 2px 2px;
             word-wrap: break-word;
             font-family: "Lucida Console", Monaco, monospace;
-            font-size: 15px;
+            font-size: 12px;
         }
 
         .infoleft {
@@ -105,7 +103,7 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0xf4ed4A682255c0aB33d8E3fCf7b6c1BcaE43b26A";
+        let postVoteAddress = "0xE9a2E103D2ea5De3E8A072B28225E83f2ebA3a48";
         let membershipAddress = "0x7b8cf4cb52fB998266dEE46830F6B08054A2468e";
 
         let senderAccount;
@@ -216,42 +214,74 @@
             day = days[d.getDay()];
             hour = d.getHours();
             minute = d.getMinutes();
-            timestamp = day + " " + date.toString().padStart(2, '0') + "-" + month + "-" + year + " " + hour.toString().padStart(2, '0') + ":" + minute.toString().padStart(2, '0');
+            timestamp = month + "" + date.toString().padStart(2, '0') //+ " " + hour.toString().padStart(2, '0') + ":" + minute.toString().padStart(2, '0');
             // console.log("1", timestamp);
             return timestamp;
         }
 
         const handleDisplayStatus = async () => {
-            const posts = await pVcontract.methods.totalPost().call()
+            const posts = await pVcontract.methods.allPost().call()
             for (var i = posts.length - 1; i >= 0; i--) {
                 const singlePost = await pVcontract.methods.getPost(posts[i], senderAccount).call();
                 // <p id="id"> ${posts[i]} </p>
+                // const isComment = singlePost.parent;
                 const target = document.querySelector("#app");
-
+                let contractHtml = "";
                 const timestamp = setTime(singlePost);     
-                    console.log({singlePost});
+                console.log({singlePost});
                 if (userPaid && KYCdone){
-                    contractHtml = `
-                <div class="card">
-                  <p id="id"></p>
-                  <label name="User">${singlePost.user}</label> <br>
-                  <label name="time">${timestamp}</label>
-                  <br><br>
+                    if (singlePost.parent==0)
+                    {
+                        contractHtml = `
+                        <div class="card">
+                        <p id="id"></p>
+                        <label name="User" class="info">${singlePost.user}</label> <br>
+                        <label name="time" class="info">${timestamp}</label>
+                        <br><br>
 
-                  <div class="info">${singlePost.value}</div>
-                  <div class="container">
-                    <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
-                    <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
-                    <button id="vote" onclick=handleVote(${posts[i]})>Votes</button>
-                    <p id="votes${posts[i]}"></p>
-                    <textarea id="name" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:80%; padding: 1%;" ></textarea>
-                    <button id="comment" onclick=handlecomment()>Comment</button>
-                  </div>
-                </div>
-              `;
+                        <div class="info">${singlePost.value}</div>
+                        <div class="container">
+                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                            <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
+                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
+                            <p id="cmnt${posts[i]}"></p>
+                            </div>
+                            <textarea id="cmntname" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
+                            <button id="comment" onclick=handlecomment(${posts[i]})>Comment</button>
+                        </div>`;
+                    }
+                    else {
+                        // contractHtml = `
+                        // <div class="card">
+                        // <p id="id"></p>
+                        // <label name="User" class="info">${singlePost.user}</label> <br>
+                        // <label name="time" class="info">${timestamp}</label>
+                        // <br><br>
 
-            
-            }
+                        // <div class="info">${singlePost.value}</div>
+                        // <div class="container">
+                        //     <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                        //     <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
+                        //     <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
+                        //     <p id="cmnt${posts[i]}"></p>
+                        //     </div>
+                        //     <textarea id="cmntname" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
+                        //     <button id="comment" onclick=handlecomment(${posts[i]})>Comment</button>
+                        // </div>`;
+
+                        // let commentHtml = `
+                        // <div class="card">
+                        //     <div class="info">${singlePost.value}</div>
+                        //     <div class="container1">
+                        //         <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                        //         <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
+                        //         <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
+                        //     </div>
+                        // </div>`;
+                        // const temp1 = document.getElementById(`cmnt${singlePost.parent}`);
+                        // temp1.innerText = commentHtml;
+                    }
+                }
                 else
                     contractHtml = `
                 <div class="card">
@@ -321,13 +351,13 @@
             console.log(msg);
             const voteButton = document.getElementById(`upvote${msg}`);
             const voteButton1 = document.getElementById(`downvote${msg}`);
+            const voteButton2 = document.getElementById(`vote${msg}`);
             // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
             voteButton.disabled = true;
             voteButton.innerText = "Upvoting";
             await pVcontract.methods.Upvote(senderAccount, msg).send({ from: senderAccount });
             const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            // const totalUpvotes = await pVcontract.methods.totalUpvote(senderAccount, msg).call();
-            // document.getElementById("votes").innerHTML = totalUpvotes;
+            voteButton2.innerText = "Vote";
             voteButton.disabled = false;
             if (!singlePost.hasDownvoted) voteButton1.innerText = "Downvote";
             if (singlePost.hasUpvoted) voteButton.innerText = "Upvoted";
@@ -339,13 +369,13 @@
             // console.log(msg);
             const voteButton = document.getElementById(`downvote${msg}`);
             const voteButton1 = document.getElementById(`upvote${msg}`);
+            const voteButton2 = document.getElementById(`vote${msg}`);
             // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
             voteButton.disabled = true;
-            voteButton.innertext = "Downvoting";
+            voteButton.innerText = "Downvoting";
             await pVcontract.methods.Downvote(senderAccount, msg).send({ from: senderAccount });
             const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            // const totalDownvotes = await pVcontract.methods.totalDownvote(senderAccount, msg).call();
-            // document.getElementById("votes").innerHTML = totalDownvotes;
+            voteButton2.innerText = "Votes";
             voteButton.disabled = false;
             if (!singlePost.hasUpvoted) voteButton1.innerText = "Upvote";
             if (singlePost.hasDownvoted) voteButton.innerText = "Downvoted";
@@ -356,7 +386,9 @@
         const handleVote = async (msg) => {
             // console.log(msg);
             const totalVotes = await pVcontract.methods.totalVote(senderAccount, msg).call();
-            document.getElementById(`votes${msg}`).innerHTML = totalVotes;
+            const temp = document.getElementById(`vote${msg}`);
+            console.log(temp);
+            temp.innerText = totalVotes;
             console.log("Voted");
         };
 
@@ -371,8 +403,18 @@
             }
         };
 
-        const handlecomment = async e => {
-            e.preventDefault();
+        const handlecomment = async (prntId) => {
+            console.log("Commenting");
+            console.log(prntId);
+            const cmntvalue = document.getElementById("cmntname").value;
+            console.log(cmntvalue);
+            const cmntMSG = await pVcontract.methods.postComment(senderAccount, prntId, cmntvalue).send({ from: senderAccount });
+            const cmntId = await pVcontract.methods.totalCmnt().call();
+            // const cmntDetail = await pVcontract.methods.pst(cmntId[cmntId.length-1]).call();
+            console.log(cmntId)
+            console.log("Commented");
+            // console.log(cmntDetail);
+            render();
         }
 
         const handleSendPost = async e => {
@@ -385,8 +427,8 @@
                 postStatus.innerText = "Posting...";
                 console.log("Posting");
                 await pVcontract.methods.postStatus(`${senderAccount}`, message).send({ from: senderAccount });
-                postStatus.disabled = false;
-                postStatus.innerText = "Post";
+                // postStatus.disabled = false;
+                // postStatus.innerText = "Post";
                 console.log("Posted");
                 render();
                 // let msgId = await pVcontract.methods.allPost(`${senderAccount}`).call();

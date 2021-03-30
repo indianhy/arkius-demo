@@ -491,6 +491,11 @@ const contractABI1 = `[
 				"internalType": "string",
 				"name": "Entity",
 				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "points",
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -755,6 +760,47 @@ const contractABI1 = `[
 			}
 		],
 		"name": "paymentUpdate",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_add",
+				"type": "address"
+			}
+		],
+		"name": "pointsGetter",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_add",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_val",
+				"type": "uint256"
+			}
+		],
+		"name": "pointsSetter",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",

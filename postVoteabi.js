@@ -1,38 +1,60 @@
 const contractABI = `[
 	{
-		"constant": false,
+		"constant": true,
 		"inputs": [
 			{
-				"name": "_id",
-				"type": "uint256"
-			},
-			{
-				"name": "_add",
+				"name": "user",
 				"type": "address"
 			}
 		],
-		"name": "deletePost",
-		"outputs": [],
+		"name": "totalPoints",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
 		"payable": false,
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"constant": false,
+		"constant": true,
 		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "pst",
+		"outputs": [
 			{
 				"name": "user",
 				"type": "address"
 			},
 			{
-				"name": "_id",
+				"name": "parent",
+				"type": "uint256"
+			},
+			{
+				"name": "value",
+				"type": "string"
+			},
+			{
+				"name": "upvote",
+				"type": "uint256"
+			},
+			{
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"name": "downvote",
 				"type": "uint256"
 			}
 		],
-		"name": "Downvote",
-		"outputs": [],
 		"payable": false,
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -61,27 +83,22 @@ const contractABI = `[
 		"constant": false,
 		"inputs": [
 			{
-				"name": "user",
-				"type": "address"
+				"name": "_id",
+				"type": "uint256"
 			},
 			{
-				"name": "_value",
-				"type": "string"
+				"name": "_add",
+				"type": "address"
 			}
 		],
-		"name": "postStatus",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"name": "deletePost",
+		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"constant": false,
+		"constant": true,
 		"inputs": [
 			{
 				"name": "user",
@@ -92,31 +109,52 @@ const contractABI = `[
 				"type": "uint256"
 			}
 		],
-		"name": "Upvote",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
+		"name": "message",
+		"outputs": [
 			{
-				"name": "_address",
-				"type": "address"
+				"name": "",
+				"type": "string"
 			}
 		],
 		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
+		"stateMutability": "view",
+		"type": "function"
 	},
 	{
 		"constant": true,
 		"inputs": [],
-		"name": "allPost",
+		"name": "totalPost",
 		"outputs": [
 			{
 				"name": "",
 				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "memVote",
+		"outputs": [
+			{
+				"name": "upvotes",
+				"type": "uint256"
+			},
+			{
+				"name": "downvotes",
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -165,11 +203,11 @@ const contractABI = `[
 					},
 					{
 						"name": "hasUpvoted",
-						"type": "bool"
+						"type": "uint256"
 					},
 					{
 						"name": "hasDownvoted",
-						"type": "bool"
+						"type": "uint256"
 					}
 				],
 				"name": "",
@@ -182,153 +220,8 @@ const contractABI = `[
 	},
 	{
 		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			},
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "memVote",
-		"outputs": [
-			{
-				"name": "upvoted",
-				"type": "bool"
-			},
-			{
-				"name": "downvoted",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"name": "_id",
-				"type": "uint256"
-			}
-		],
-		"name": "message",
-		"outputs": [
-			{
-				"name": "",
-				"type": "string"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "pst",
-		"outputs": [
-			{
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"name": "parent",
-				"type": "uint256"
-			},
-			{
-				"name": "value",
-				"type": "string"
-			},
-			{
-				"name": "upvote",
-				"type": "uint256"
-			},
-			{
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"name": "downvote",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_id",
-				"type": "uint256"
-			}
-		],
-		"name": "statusOwner",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
 		"inputs": [],
 		"name": "totalCmnt",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"name": "_id",
-				"type": "uint256"
-			}
-		],
-		"name": "totalDownvote",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "totalPost",
 		"outputs": [
 			{
 				"name": "",
@@ -374,6 +267,48 @@ const contractABI = `[
 				"type": "uint256"
 			}
 		],
+		"name": "totalDownvote",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "statusOwner",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
 		"name": "totalVote",
 		"outputs": [
 			{
@@ -384,5 +319,97 @@ const contractABI = `[
 		"payable": false,
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"name": "_value",
+				"type": "string"
+			}
+		],
+		"name": "postStatus",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"name": "_id",
+				"type": "uint256"
+			},
+			{
+				"name": "vote",
+				"type": "uint256"
+			}
+		],
+		"name": "Downvote",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "allPost",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"name": "_id",
+				"type": "uint256"
+			},
+			{
+				"name": "vote",
+				"type": "uint256"
+			}
+		],
+		"name": "Upvote",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
 	}
 ]`

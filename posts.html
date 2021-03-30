@@ -103,8 +103,8 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0xeEA39Bd961f590F9d27AA13fa04edc9bB78521aA";
-        let membershipAddress = "0x7b8cf4cb52fB998266dEE46830F6B08054A2468e";
+        let postVoteAddress = "0xc4F9ec93d6dF698EE37D583e51fc79BD82c9e495";
+        let membershipAddress = "0x9482401E56856533dd0178D148199851B59fE801";
 
         let senderAccount;
         let owner;
@@ -152,12 +152,17 @@
                  //   await web3.eth.getBalance(userAddress) // Balance is in wei
                 //);
 
+                const info = await Memcontract.methods.info(userAddress).call();
+
                 senderAccount = userAddress;
 
                 authHtml = `
             <div class="container">
               <h1>Current user: ${userMetadata.email}</h1>
               <button onclick="handleLogout()">Logout</button>
+              <button id="btn" onclick="handleSetPoint(${document.getElementById("PointSetter")})">Set</button>
+              <input type="text" id="PointSetter" size="4">
+              <label id="PointGetter">${info.points}</label>
             </div>
           `;
         //         userHtml = `
@@ -185,7 +190,7 @@
            `;
 
                 const currentMessage = "Arkius Membership Token"//await contract.methods.name().call();
-                const info = await Memcontract.methods.info(userAddress).call();
+                // const info = await Memcontract.methods.info(userAddress).call();
                 const userPaid1 = info.MemberPaid;//await Memcontract.methods.kycGetter(userAddress).call();
                 const KYCdone1 = info.MemberKYC//await Memcontract.methods.paymentGetter(userAddress).call();
                 //const currentMessage = ""//await Memcontract.methods.name().call();
@@ -205,6 +210,18 @@
                 authHtml + postHtml + contractHtml;
         };
 
+
+        const handleSetPoint = async (value) => {
+            if (value == null || value == "") window.alert("Null value")
+            else {
+                await Memcontract.methods.pointsSetter(senderAccount, value).send({ from: senderAccount});
+                let temp1 = document.getElementById(`PointSetter`);
+                temp1.innerText = "";
+                let temp2 = document.getElementById(`PointGetter`);
+                temp2.innerText = value;
+                console.log("Success");
+            }
+        }
 
         const setTime = (detail) => {
 
@@ -229,6 +246,9 @@
                 const singlePost = await pVcontract.methods.getPost(posts[i], senderAccount).call();
                 // <p id="id"> ${posts[i]} </p>
                 // const isComment = singlePost.parent;
+
+                const userVoteCount = await pVcontract.methods.memVote(posts[i], senderAccount).call();
+
                 const target = document.querySelector("#app");
                 let contractHtml = "";
                 const timestamp = setTime(singlePost);     
@@ -244,47 +264,18 @@
                         <br><br>
 
                         <div class="info">${singlePost.value}</div>
-                        <div class="container">
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                        <div class="container">                  
+                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
+                            <input type='text' id='UPC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
+                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
+                            <input type='text' id='DNC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
                             <textarea id="cmntname${posts[i]}" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
                             <button id="cmnt${posts[i]}" onclick=handlecomment(${posts[i]})>Comment</button>
                         </div>`;
-                    }
-                    else {
-                        // contractHtml = `
-                        // <div class="card">
-                        // <p id="id"></p>
-                        // <label name="User" class="info">${singlePost.user}</label> <br>
-                        // <label name="time" class="info">${timestamp}</label>
-                        // <br><br>
-
-                        // <div class="info">${singlePost.value}</div>
-                        // <div class="container">
-                        //     <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
-                        //     <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                        //     <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
-                        //     <p id="cmnt${singlePost.parent}.${posts[i]}"></p>
-                        //     </div>
-                        //     <textarea id="cmntname" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
-                        //     <button id="comment" onclick=handlecomment(${posts[i]})>Comment</button>
-                        // </div>`;
-
-                        // let commentHtml = `
-                        // <div class="card">
-                        //     <div class="info">${singlePost.value}</div>
-                        //     <div class="container1">
-                        //         <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
-                        //         <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                        //         <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
-                        //     </div>
-                        // </div>`;
-                        // const temp1 = document.getElementById(`cmnt${singlePost.parent}`);
-                        // temp1.innerText = commentHtml;
                     }
                 }
                 else {
@@ -301,6 +292,26 @@
               `;
             }
                 target.innerHTML = target.innerHTML + contractHtml;
+                const voteButton = document.getElementById(`upvote${posts[i]}`);
+                const voteButton1 = document.getElementById(`downvote${posts[i]}`);
+
+                // const UpCount = document.getElementById(`UPC${posts[i]}`);
+                // const DwCount = document.getElementById(`DNC${posts[i]}`);
+                
+                if (userVoteCount.upvotes>0) {
+                    voteButton.disabled = true;
+                    voteButton1.disabled = true;
+                    // UpCount.innerHTML = "";
+                    // DwCount.innerHTML = "";
+                    voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
+                }
+                if (userVoteCount.downvotes>0) {
+                    voteButton.disabled = true;
+                    voteButton1.disabled = true;
+                    // UpCount.innerHTML = "";
+                    // DwCount.innerHTML = "";
+                    voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
+                }
             }
         };
 
@@ -315,6 +326,8 @@
                 const timestamp = setTime(singlePost);     
                 // console.log({singlePost});
 
+                const userVoteCount = await pVcontract.methods.memVote(posts[i], senderAccount).call();
+
                 if (userPaid && KYCdone){
                     if (singlePost.parent!=0)
                     {
@@ -328,85 +341,75 @@
 
                         <div class="info">${singlePost.value}</div>
                         <div class="container">
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>${singlePost.hasUpvoted?"Upvoted":"Upvote"}</button>
+                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvote</button>
+                            <input type='text' id='UPC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>${singlePost.hasDownvoted?"Downvoted":"Downvote"}</button>
+                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvote</button>
+                            <input type='text' id='DNC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                             <p id="cmnt${posts[i]}"></p>
                             </div>
                             <div class="container1" id="comment${posts[i]}"></div>
                         </div>`;
                         variable.innerHTML += commentHtml
+
+                        const voteButton = document.getElementById(`upvote${posts[i]}`);
+                        const voteButton1 = document.getElementById(`downvote${posts[i]}`);
+
+                        // const UpCount = document.getElementById(`UPC${posts[i]}`);
+                        // const DwCount = document.getElementById(`DNC${posts[i]}`);
+                        
+                        if (userVoteCount.upvotes>0) {
+                            // UpCount.innerHTML = "";
+                            // DwCount.innerHTML = "";
+                            voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
+                            voteButton.disabled = true;
+                            voteButton1.disabled = true;
+                        }
+                        if (userVoteCount.downvotes>0) {
+                            // UpCount.innerHTML = "";
+                            // DwCount.innerHTML = "";
+                            voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
+                            voteButton.disabled = true;
+                            voteButton1.disabled = true;
+                        }
                     }
                 }
             }
         };
-
-        const hasupvoted = async ( post ) => {
-            const res = await pVcontract.methods.memVote(post,senderAccount).call();
-            console.log("1", {res});
-            return res.upvoted;
-        }
-
-        const hasdownvoted = async ( post ) => {
-            const res = await pVcontract.methods.memVote(post,senderAccount).call();
-            console.log("2", {res});
-            return res.downvoted;
-        }
-
-        // const handlePostedStatus = async e => {
-        //       // e.preventDefault();
-        //       const target = document.querySelector("#app");
-        //       if(userPaid && KYCdone)
-        //         contractHtml = `
-        //           <div class="card">
-
-        //             <p id="id"> ${messageId} </p>
-        //             <label name="User">${owner}</label> 
-        //             <br><br>
-
-        //             <div class="info">${Postedmessage}</div>
-        //             <div class="container">
-        //               <button id="upvote${messageId}" onclick=handleUpvote(${messageId})>Upvote</button>
-        //               <button id="downvote${messageId}" onclick=handleDownvote(${messageId})>Downvote</button>
-        //               <button id="vote" onclick=handleVote(${messageId})>Votes</button>
-        //               <p id="votes${messageId}"></p>
-        //             </div>
-        //           </div>
-        //         `;
-        //       else
-        //         contractHtml = `
-        //           <div class="card">
-        //             <p id="id"> ${messageId} </p>
-        //             <br><label name="User"> ${owner}<label> 
-        //             <br><br>
-
-        //             <div class="info">${Postedmessage}</div>
-        //           </div>
-        //         `;
-        //         const postStatus = document.getElementById("post_status");
-        //         postStatus.disabled = false;
-        //         postStatus.innerText = "Post";
-
-        //         // target.innerHTML = target.innerHTML + contractHtml;
-        //         render();
-        //       };
 
         const handleUpvote = async (msg) => {
             console.log(msg);
             const voteButton = document.getElementById(`upvote${msg}`);
             const voteButton1 = document.getElementById(`downvote${msg}`);
             const voteButton2 = document.getElementById(`vote${msg}`);
-            // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            voteButton.disabled = true;
-            voteButton.innerText = "Upvoting";
-            await pVcontract.methods.Upvote(senderAccount, msg).send({ from: senderAccount });
-            const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            voteButton2.innerText = "Votes";
-            voteButton.disabled = false;
-            if (!singlePost.hasDownvoted) voteButton1.innerText = "Downvote";
-            if (singlePost.hasUpvoted) voteButton.innerText = "Upvoted";
-            else voteButton.innerText = "Upvote";
-            console.log("Voted");
+            const value = document.getElementById(`UPC${msg}`).value
+            
+            if (value == null || value == "") window.alert("Null value")
+
+            else {
+                const Meminfo = await Memcontract.methods.info(senderAccount).call();
+                console.log(Meminfo.points)
+                if (value*value <= Meminfo.points){
+                    console.log("Enough points")
+                    voteButton.disabled = true;
+                    voteButton.innerText = "Upvoting";
+                    await pVcontract.methods.Upvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "1500" });
+                    const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+                    handleSetPoint((Meminfo.points-(value*value)));
+
+                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
+                    voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
+                    
+                    let userVote;
+                    if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
+                    else userVote = singlePost.hasDownvoted;
+                }
+                value.innerText = "";
+                voteButton1.disabled = true;
+                voteButton.disabled = true;
+                voteButton2.innerText = "Votes";
+                console.log("Voted");
+            }
         };
 
         const handleDownvote = async (msg) => {
@@ -414,17 +417,34 @@
             const voteButton = document.getElementById(`downvote${msg}`);
             const voteButton1 = document.getElementById(`upvote${msg}`);
             const voteButton2 = document.getElementById(`vote${msg}`);
+            const value = document.getElementById(`DNC${msg}`).value
             // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            voteButton.disabled = true;
-            voteButton.innerText = "Downvoting";
-            await pVcontract.methods.Downvote(senderAccount, msg).send({ from: senderAccount });
-            const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            voteButton2.innerText = "Votes";
-            voteButton.disabled = false;
-            if (!singlePost.hasUpvoted) voteButton1.innerText = "Upvote";
-            if (singlePost.hasDownvoted) voteButton.innerText = "Downvoted";
-            else voteButton.innerText = "Downvote";
-            console.log("Voted");
+            if (value == null || value == "") window.alert("Null value")
+
+            else {
+                const Meminfo = await Memcontract.methods.info(senderAccount).call();
+                console.log(Meminfo.points)
+                if (value*value <= Meminfo.points){
+                    console.log("Enough points")
+                    voteButton.disabled = true;
+                    voteButton.innerText = "Downvoting";
+                    await pVcontract.methods.Downvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "500" });
+                    const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+                    handleSetPoint((Meminfo.points-(value*value)));
+
+                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
+                    voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
+                    
+                    let userVote;
+                    if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
+                    else userVote = singlePost.hasDownvoted;
+                }
+                value.innerText = "";
+                voteButton1.disabled = true;
+                voteButton.disabled = true;
+                voteButton2.innerText = "Votes";
+                console.log("Voted");
+            }
         };
 
         const handleVote = async (msg) => {
@@ -478,9 +498,11 @@
                         
                     <div class="info">${cmntDetail.value}</div>
                     <div class="container">
-                        <button id="upvote${cmntId[cmntId.length-1]}" onclick=handleUpvote(${cmntId[cmntId.length-1]})>${cmntDetail.hasUpvoted?"Upvoted":"Upvote"}</button>
+                        <button id="upvote${cmntId[cmntId.length-1]}" onclick=handleUpvote(${cmntId[cmntId.length-1]})>Upvote</button>
+                            <input type='text' id='UPC${cmntId[cmntId.length-1]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                         <button id="vote${cmntId[cmntId.length-1]}" onclick=handleVote(${cmntId[cmntId.length-1]})>Votes</button>
-                        <button id="downvote${cmntId[cmntId.length-1]}" onclick=handleDownvote(${cmntId[cmntId.length-1]})>${cmntDetail.hasDownvoted?"Downvoted":"Downvote"}</button>
+                        <button id="downvote${cmntId[cmntId.length-1]}" onclick=handleDownvote(${cmntId[cmntId.length-1]})>Downvote</button>
+                            <input type='text' id='DNC${cmntId[cmntId.length-1]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                     </div>
                 </div>`;
                 const temp1 = document.getElementById(`comment${cmntDetail.parent}`);

@@ -9,6 +9,10 @@ interface membership {
     
     function kycGetter(address user) external view returns(bool);
     
+    function pointsGetter(address _add) external view returns(uint);
+    
+    function pointsSetter(address _add, uint _val) external;
+    
 }
 
 contract ballot {
@@ -23,8 +27,8 @@ contract ballot {
     }
     
     struct member {
-        bool upvoted;
-        bool downvoted;
+        uint upvotes;
+        uint downvotes;
     }
     
     struct returnPost {
@@ -34,8 +38,8 @@ contract ballot {
         uint parent;
         uint timestamp;
         uint downvote;
-        bool hasUpvoted;
-        bool hasDownvoted;
+        uint hasUpvoted;
+        uint hasDownvoted;
     }
     
     uint256 id = 0;
@@ -66,7 +70,7 @@ contract ballot {
     }
     
     function getPost(uint id, address _add) public view returns(returnPost memory) {
-        returnPost memory rpst = returnPost(pst[id].user, pst[id].value, pst[id].upvote, pst[id].parent, pst[id].timestamp, pst[id].downvote, memVote[id][_add].upvoted, memVote[id][_add].downvoted);
+        returnPost memory rpst = returnPost(pst[id].user, pst[id].value, pst[id].upvote, pst[id].parent, pst[id].timestamp, pst[id].downvote, memVote[id][_add].upvotes, memVote[id][_add].downvotes);
         return rpst;
     } 
     
@@ -128,6 +132,10 @@ contract ballot {
         posts.push(id);
     }
     
+    function totalPoints(address user) public view returns(uint) {
+        return mem.pointsGetter(user);
+    }
+    
     function totalUpvote(address user, uint _id) public arkVoter(user) view returns(uint) {
             return pst[_id].upvote;
     }
@@ -145,74 +153,66 @@ contract ballot {
     }
     
     function Upvote(address user, uint _id) public arkVoter(user) {
-        if ((memVote[_id][msg.sender].upvoted == false) && (memVote[_id][msg.sender].downvoted == false)){
-            memVote[_id][msg.sender].upvoted = true;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].upvote += 1;
+        if (memVote[_id][user].downvotes == 0) {
+            
+            uint point = memVote[_id][user].upvotes;
+            uint balance = mem.pointsGetter(user);
+            
+            point = (2 * point) + 1;
+            if (point > balance) {
+                revert("Not enough points");
             }
-            else {
-                memVote[_id][msg.sender].upvoted = false;
-                revert("Invalid Input");
-            }
+            
+            memVote[_id][user].upvotes += 1;
+            balance = balance - point;
+            
+            mem.pointsSetter(user, balance);
+            
+            pst[_id].upvote += 1;
         }
-        else if ((memVote[_id][msg.sender].upvoted == true) && (memVote[_id][msg.sender].downvoted == false)) {
-            memVote[_id][msg.sender].upvoted = false;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].upvote -= 1;
-            }
-            else {
-                memVote[_id][msg.sender].upvoted = true;
-                revert("Invalid Input");
-            }
-        }
-        else if ((memVote[_id][msg.sender].upvoted == false) && (memVote[_id][msg.sender].downvoted == true)) {
-            memVote[_id][msg.sender].upvoted = true;
-            memVote[_id][msg.sender].downvoted = false;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].upvote += 1;
-                pst[_id].downvote -= 1;
-            }
-            else {
-                memVote[_id][msg.sender].upvoted = false;
-                memVote[_id][msg.sender].downvoted = true;
-                revert("Invalid Input");
-            }
+        else {
+            
+            memVote[_id][user].downvotes -= 1;
+            
+            uint point = memVote[_id][user].downvotes;
+            uint balance = mem.pointsGetter(user) + (2*point) + 1;
+
+            mem.pointsSetter(user, balance);
+            
+            pst[_id].upvote += 1;
+            pst[_id].downvote -= 1;
         }
     }
     
     function Downvote(address user, uint _id) public arkVoter(user) {
-        if ((memVote[_id][msg.sender].upvoted == false) && (memVote[_id][msg.sender].downvoted == false)){
-            memVote[_id][msg.sender].downvoted = true;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].downvote += 1;
+        if (memVote[_id][user].upvotes == 0) {
+            
+            uint point = memVote[_id][user].downvotes;
+            uint balance = mem.pointsGetter(user);
+            
+            point = (2 * point) + 1;
+            if (point > balance) {
+                revert("Not enough points");
             }
-            else {
-                memVote[_id][msg.sender].downvoted = false;
-                revert("Invalid Input");
-            }
+            
+            memVote[_id][user].downvotes += 1;
+            balance = balance - point;
+            
+            mem.pointsSetter(user, balance);
+            
+            pst[_id].downvote += 1;
         }
-        else if ((memVote[_id][msg.sender].upvoted == false) && (memVote[_id][msg.sender].downvoted == true)) {
-            memVote[_id][msg.sender].downvoted = false;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].downvote -= 1;
-            }
-            else {
-                memVote[_id][msg.sender].downvoted = true;
-                revert("Invalid Input");
-            }
-        }
-        else if ((memVote[_id][msg.sender].upvoted == true) && (memVote[_id][msg.sender].downvoted == false)) {
-            memVote[_id][msg.sender].downvoted = true;
-            memVote[_id][msg.sender].upvoted = false;
-            if ((keccak256(bytes(pst[_id].value))) != (keccak256(bytes("")))) {
-                pst[_id].downvote += 1;
-                pst[_id].upvote -= 1;
-            }
-            else {
-                memVote[_id][msg.sender].upvoted = false;
-                memVote[_id][msg.sender].downvoted = true;
-                revert("Invalid Input");
-            }
+        else {
+            
+            memVote[_id][user].upvotes -= 1;
+            
+            uint point = memVote[_id][user].upvotes;
+            uint balance = mem.pointsGetter(user) + (2*point) + 1;
+
+            mem.pointsSetter(user, balance);
+            
+            pst[_id].upvote -= 1;
+            pst[_id].downvote += 1;
         }
     }
 }

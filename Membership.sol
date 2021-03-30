@@ -956,6 +956,7 @@ contract UserToken is MembershipToken {
         bool Champion;
         string[] Values;
         string Entity;
+        uint points;
     }
 
     bool mutex = false;
@@ -996,7 +997,15 @@ contract UserToken is MembershipToken {
     function membership(address user) public view returns(uint) {
         return info[user].id;
     }
-
+    
+    function pointsSetter(address _add, uint _val) public {
+        info[_add].points = _val;
+    }
+    
+    function pointsGetter(address _add) external view returns(uint) {
+        return info[_add].points;
+    }
+    
     function certifierGetter(address user) external view returns(bool) {
         return info[user].Certifier;
     }

@@ -152,67 +152,105 @@ contract ballot {
             return (int(pst[_id].upvote) - int(pst[_id].downvote));
     }
     
-    function Upvote(address user, uint _id) public arkVoter(user) {
-        if (memVote[_id][user].downvotes == 0) {
+    // function Upvote(address user, uint _id) public arkVoter(user) {
+    //     if (memVote[_id][user].downvotes == 0) {
             
-            uint point = memVote[_id][user].upvotes;
-            uint balance = mem.pointsGetter(user);
+    //         uint point = memVote[_id][user].upvotes;
+    //         uint balance = mem.pointsGetter(user);
             
-            point = (2 * point) + 1;
-            if (point > balance) {
-                revert("Not enough points");
-            }
+    //         point = (2 * point) + 1;
+    //         if (point > balance) {
+    //             revert("Not enough points");
+    //         }
             
-            memVote[_id][user].upvotes += 1;
-            balance = balance - point;
+    //         memVote[_id][user].upvotes += 1;
+    //         balance = balance - point;
             
-            mem.pointsSetter(user, balance);
+    //         mem.pointsSetter(user, balance);
             
-            pst[_id].upvote += 1;
-        }
-        else {
+    //         pst[_id].upvote += 1;
+    //     }
+    //     else {
             
-            memVote[_id][user].downvotes -= 1;
+    //         memVote[_id][user].downvotes -= 1;
             
-            uint point = memVote[_id][user].downvotes;
-            uint balance = mem.pointsGetter(user) + (2*point) + 1;
+    //         uint point = memVote[_id][user].downvotes;
+    //         uint balance = mem.pointsGetter(user) + (2*point) + 1;
 
-            mem.pointsSetter(user, balance);
+    //         mem.pointsSetter(user, balance);
             
-            pst[_id].upvote += 1;
-            pst[_id].downvote -= 1;
+    //         pst[_id].upvote += 1;
+    //         pst[_id].downvote -= 1;
+    //     }
+    // }
+    
+    // function Downvote(address user, uint _id) public arkVoter(user) {
+    //     if (memVote[_id][user].upvotes == 0) {
+            
+    //         uint point = memVote[_id][user].downvotes;
+    //         uint balance = mem.pointsGetter(user);
+            
+    //         point = (2 * point) + 1;
+    //         if (point > balance) {
+    //             revert("Not enough points");
+    //         }
+            
+    //         memVote[_id][user].downvotes += 1;
+    //         balance = balance - point;
+            
+    //         mem.pointsSetter(user, balance);
+            
+    //         pst[_id].downvote += 1;
+    //     }
+    //     else {
+            
+    //         memVote[_id][user].upvotes -= 1;
+            
+    //         uint point = memVote[_id][user].upvotes;
+    //         uint balance = mem.pointsGetter(user) + (2*point) + 1;
+
+    //         mem.pointsSetter(user, balance);
+            
+    //         pst[_id].upvote -= 1;
+    //         pst[_id].downvote += 1;
+    //     }
+    // }
+    
+    function Upvote(address user, uint _id, uint vote) public arkVoter(user) {
+        
+        require(memVote[_id][user].downvotes == 0 && memVote[_id][user].upvotes == 0,"Already Voted");
+            
+        uint point = vote * vote;
+        uint balance = mem.pointsGetter(user);
+        
+        if (point > balance) {
+            revert("Not enough points");
         }
+        
+        memVote[_id][user].upvotes = vote;
+        balance = balance - point;
+        
+        mem.pointsSetter(user, balance);
+        
+        pst[_id].upvote += 1;
     }
     
-    function Downvote(address user, uint _id) public arkVoter(user) {
-        if (memVote[_id][user].upvotes == 0) {
+    function Downvote(address user, uint _id, uint vote) public arkVoter(user) {
+        
+        require(memVote[_id][user].downvotes == 0 && memVote[_id][user].upvotes == 0,"Already Voted");
             
-            uint point = memVote[_id][user].downvotes;
-            uint balance = mem.pointsGetter(user);
-            
-            point = (2 * point) + 1;
-            if (point > balance) {
-                revert("Not enough points");
-            }
-            
-            memVote[_id][user].downvotes += 1;
-            balance = balance - point;
-            
-            mem.pointsSetter(user, balance);
-            
-            pst[_id].downvote += 1;
+        uint point = vote * vote;
+        uint balance = mem.pointsGetter(user);
+        
+        if (point > balance) {
+            revert("Not enough points");
         }
-        else {
-            
-            memVote[_id][user].upvotes -= 1;
-            
-            uint point = memVote[_id][user].upvotes;
-            uint balance = mem.pointsGetter(user) + (2*point) + 1;
-
-            mem.pointsSetter(user, balance);
-            
-            pst[_id].upvote -= 1;
-            pst[_id].downvote += 1;
-        }
+        
+        memVote[_id][user].downvotes = vote;
+        balance = balance - point;
+        
+        mem.pointsSetter(user, balance);
+        
+        pst[_id].downvote += 1;
     }
 }

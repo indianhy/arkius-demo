@@ -395,7 +395,7 @@
                     voteButton.innerText = "Upvoting";
                     await pVcontract.methods.Upvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "1500" });
                     const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-                    handleSetPoint((Meminfo.points-(value*value)));
+                    // handleSetPoint((Meminfo.points-(value*value)));
 
                     voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
                     voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;

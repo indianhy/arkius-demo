@@ -232,7 +232,7 @@ contract ballot {
         
         mem.pointsSetter(user, balance);
         
-        pst[_id].upvote += 1;
+        pst[_id].upvote += vote;
     }
     
     function Downvote(address user, uint _id, uint vote) public arkVoter(user) {
@@ -251,6 +251,6 @@ contract ballot {
         
         mem.pointsSetter(user, balance);
         
-        pst[_id].downvote += 1;
+        pst[_id].downvote += vote;
     }
 }

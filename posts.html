@@ -409,7 +409,6 @@
                     const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
                     handlePointDisplay();
 
-                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
                     voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
                     
                     let userVote;
@@ -446,7 +445,6 @@
                     handlePointDisplay();
 
                     voteButton.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
-                    voteButton1.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
                     
                     let userVote;
                     if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;

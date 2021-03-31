@@ -160,7 +160,7 @@
             <div class="container">
               <h1>Current user: ${userMetadata.email}</h1>
               <button onclick="handleLogout()">Logout</button>
-              <button id="btn" onclick="handleSetPoint(${document.getElementById("PointSetter")})">Set</button>
+              <button id="btn" onclick="handleSetPoint()">Set</button>
               <input type="text" id="PointSetter" size="4">
               <label id="PointGetter">${info.points}</label>
             </div>
@@ -210,13 +210,24 @@
                 authHtml + postHtml + contractHtml;
         };
 
+        const handlePointDisplay = async () => {
+            const info = await Memcontract.methods.info(senderAccount).call();
+            const display = document.getElementById("PointGetter");
+            display.innerText = info.points;
+        }
 
-        const handleSetPoint = async (value) => {
+
+        const handleSetPoint = async () => {
+
+            const value = document.getElementById("PointSetter").value;
+            const button = document.getElementById("btn");
+
             if (value == null || value == "") window.alert("Null value")
             else {
+                button.disabled = true;
                 await Memcontract.methods.pointsSetter(senderAccount, value).send({ from: senderAccount});
-                let temp1 = document.getElementById(`PointSetter`);
-                temp1.innerText = "";
+                button.disabled = false;
+                button.innerText = "Set";
                 let temp2 = document.getElementById(`PointGetter`);
                 temp2.innerText = value;
                 console.log("Success");
@@ -393,9 +404,10 @@
                     console.log("Enough points")
                     voteButton.disabled = true;
                     voteButton.innerText = "Upvoting";
-                    await pVcontract.methods.Upvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "1500" });
+                    await pVcontract.methods.Upvote(senderAccount, msg, value).send({ from: senderAccount });
+                    console.log("ABC")
                     const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-                    // handleSetPoint((Meminfo.points-(value*value)));
+                    handlePointDisplay();
 
                     voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
                     voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
@@ -403,12 +415,13 @@
                     let userVote;
                     if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
                     else userVote = singlePost.hasDownvoted;
+                    value.innerText = "";
+                    voteButton1.disabled = true;
+                    voteButton.disabled = true;
+                    voteButton2.innerText = "Votes";
+                    console.log("Voted");
                 }
-                value.innerText = "";
-                voteButton1.disabled = true;
-                voteButton.disabled = true;
-                voteButton2.innerText = "Votes";
-                console.log("Voted");
+                else window.alert("Not Enough Points")
             }
         };
 
@@ -428,22 +441,23 @@
                     console.log("Enough points")
                     voteButton.disabled = true;
                     voteButton.innerText = "Downvoting";
-                    await pVcontract.methods.Downvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "500" });
+                    await pVcontract.methods.Downvote(senderAccount, msg, value).send({ from: senderAccount });
                     const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-                    handleSetPoint((Meminfo.points-(value*value)));
+                    handlePointDisplay();
 
-                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
-                    voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
+                    voteButton.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
+                    voteButton1.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
                     
                     let userVote;
                     if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
                     else userVote = singlePost.hasDownvoted;
+                    value.innerText = "";
+                    voteButton1.disabled = true;
+                    voteButton.disabled = true;
+                    voteButton2.innerText = "Votes";
+                    console.log("Voted");
                 }
-                value.innerText = "";
-                voteButton1.disabled = true;
-                voteButton.disabled = true;
-                voteButton2.innerText = "Votes";
-                console.log("Voted");
+                else window.alert("Not Enough Points")
             }
         };
 

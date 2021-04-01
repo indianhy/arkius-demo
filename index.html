@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Arkius Magic Login 💎</title>
+    <title>Arkius Magic Voting Ethereum 💎</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" type="text/css" href="styles.css" />
@@ -229,10 +229,12 @@
               JSON.parse(contractABI),
               contractAddress
             );
+            const d1 = + new Date()
             const receipt = await contract.methods
               .mint(fromAddress, [], 1, 'api/token/1')
               .send({ from: fromAddress });
-            console.log("Completed:", receipt);
+              const d2 = + new Date()
+            console.log("Completed:", {t:d2-d1});
             render();
             
           };

@@ -93,6 +93,8 @@
             padding: 2px;
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="ispin.css" />
+    <script defer src="https://unpkg.com/ispin"></script>
     <script src="./postVoteabi.js"></script>
     <script src="./Membershipabi.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/magic-sdk/dist/magic.js"></script>
@@ -159,10 +161,8 @@
                 authHtml = `
             <div class="container">
               <h1>Current user: ${userMetadata.email}</h1>
+              <label id="PointGetter">Voting Points : ${info.points}</label><br><br>
               <button onclick="handleLogout()">Logout</button>
-              <button id="btn" onclick="handleSetPoint(${document.getElementById("PointSetter")})">Set</button>
-              <input type="text" id="PointSetter" size="4">
-              <label id="PointGetter">${info.points}</label>
             </div>
           `;
         //         userHtml = `
@@ -183,6 +183,18 @@
               <div class="card">
                 <h1>Post Status</h1>
                 <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
+                <br><br>
+                <label> Voting Method </label><br>
+                <input type="checkbox" id="weight1" name="voting" value="Conventional" onclick="onlyOne(this)">
+                <label for="weight1"> Conventional </label><br>
+                <input type="checkbox" id="weight2" name="voting" value="Quadratic" onclick="onlyOne(this)">
+                <label for="weight2">Quadratic</label><br>
+                <input type="checkbox" id="weight3" name="voting" value="First-Past-the-Post" onclick="onlyOne(this)">
+                <label for="weight3">First-Past-the-Post</label><br>
+                <input type="checkbox" id="weight4" name="voting" value="Proportional Voting" onclick="onlyOne(this)">
+                <label for="weight4">Proportional</label><br>
+                <input type="checkbox" id="weight5" name="voting" value="Ranked Choice Voting" onclick="onlyOne(this)">
+                <label for="weight4">Ranked Choice Voting</label><br>
                 <div class="container">
                     <button type="submit" value="Post" id="post_status">Post</button>
                 </div>
@@ -266,10 +278,11 @@
                         <div class="info">${singlePost.value}</div>
                         <div class="container">                  
                             <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
-                            <input type='text' id='UPC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
                             <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
-                            <input type='text' id='DNC${posts[i]}' maxlength='2' size='1' pattern='\d{2}' required="required">
+                            <br> <br>
+                            <input name="weight-input${posts[i]}" type="number" min="1" max="100" step="1">
+                            <p id = "voteWeight${posts[i]}"></p>
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
@@ -312,7 +325,21 @@
                     // DwCount.innerHTML = "";
                     voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
                 }
+
+                // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
+                //     // options here
+                //     wrapperClass: 'ispin-wrapper',
+                //     buttonsClass: 'ispin-button',
+                //     step: 1,
+                //     pageStep: 10,
+                //     disabled: false,
+                //     repeatInterval: 200,
+                //     wrapOverflow: false,
+                //     parse: Number,
+                //     format: String
+                // });
             }
+            
         };
 
         const handleDisplayComment = async () => {
@@ -539,6 +566,13 @@
             await magic.user.logout();
             window.open('./index.html', '_self', false)
         };
+
+        function onlyOne(checkbox) {
+                var checkboxes = document.getElementsByName('voting')
+                checkboxes.forEach((item) => {
+                    if (item !== checkbox) item.checked = false
+                })
+            }
     </script>
 </head>
 

@@ -15,7 +15,7 @@ interface membership {
     
 }
 
-contract ballot {
+contract ballot { 
     
     struct post {
         address user;

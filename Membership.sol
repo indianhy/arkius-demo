@@ -8,7 +8,7 @@ pragma experimental ABIEncoderV2;
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
- */
+ */ 
 library SafeMath {
 
     /**

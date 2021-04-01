@@ -2,6 +2,7 @@ pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
 interface Membership {
+    
     struct MemberDetail {
         uint id;
         bool MemberPaid;
@@ -71,10 +72,10 @@ contract Voting {
         mem = _address;
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == admin,"You are not an admin");
-        _;
-    }
+    // modifier onlyOwner() {
+    //     require(msg.sender == admin,"You are not an admin");
+    //     _;
+    // }
 
     
     modifier arkMember(address user) {
@@ -106,7 +107,7 @@ contract Voting {
         return postIDs;
     }
 
-    function addPost(string memory _value, uint votingMechanism) public arkVoter(msg.sender) returns(uint) {
+    function addPost(string memory _value, uint votingMechanism) public arkMember(msg.sender) returns(uint) {
         id += 1;
         posts[id].user = msg.sender;
         posts[id].value = _value;
@@ -134,7 +135,7 @@ contract Voting {
         
     }
     
-    function postComment( uint _parent, string memory _value) public arkMember(msg.sender) {
+    function postComment( uint _parent, string memory _value, uint votingMechanism) public arkVoter(msg.sender) {
         id += 1;
         posts[id].user = msg.sender;
         posts[id].parent = _parent;
@@ -142,8 +143,9 @@ contract Voting {
         posts[id].upvote = 0;
         posts[id].downvote = 0;
         posts[id].timestamp = now;
+        posts[id].votingMechanism = votingMechanism;
         commentIDs.push(id);
-        postIDs.push(id);
+        allIDs.push(id);
     }
     
     function totalPoints(address user) public view returns(uint) {
@@ -173,6 +175,18 @@ contract Voting {
         if(votingMechanism == 1){
             upvoteQuadratic(user, _id, vote);
         }
+        else upvoteQuadratic(user, _id, 1);
+    }
+    
+    function downvote(uint _id, uint vote) public arkVoter(msg.sender) {
+        
+        address user = msg.sender;
+        require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
+        uint votingMechanism = posts[_id].votingMechanism;
+        if(votingMechanism == 1){
+            downvoteQuadratic(user, _id, vote);
+        }
+        else downvoteQuadratic(user, _id, 1);
     }
     
 
@@ -181,7 +195,7 @@ contract Voting {
         uint point = vote * vote;
         uint balance = mem.getVotingPoints(user);
         
-        if (point >= balance) {
+        if (point > balance) {
             revert("Not enough points");
         }
         
@@ -193,10 +207,8 @@ contract Voting {
         posts[_id].upvote += vote;
     }
     
-    function Downvote(address user, uint _id, uint vote) public arkVoter(user) {
+    function downvoteQuadratic(address user, uint _id, uint vote) internal {
         
-        require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
-            
         uint point = vote * vote;
         uint balance = mem.getVotingPoints(user);
         
@@ -205,9 +217,8 @@ contract Voting {
         }
         
         memberVote[_id][user].downvotes = vote;
-        balance = balance - point;
         
-        mem.subVotingPoints(user, balance);
+        mem.subVotingPoints(user, point);
         
         posts[_id].downvote += vote;
     }

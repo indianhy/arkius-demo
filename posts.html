@@ -105,8 +105,8 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0xc4F9ec93d6dF698EE37D583e51fc79BD82c9e495";
-        let membershipAddress = "0x9482401E56856533dd0178D148199851B59fE801";
+        let postVoteAddress = "0x6569462a3fE33854dE8cB6d2822e149350dF6199";
+        let membershipAddress = "0x2310985DB2117D99a37dc6f6F10E01eD4b701C51";
 
         let senderAccount;
         let owner;
@@ -161,7 +161,7 @@
                 authHtml = `
             <div class="container">
               <h1>Current user: ${userMetadata.email}</h1>
-              <label id="PointGetter">Voting Points : ${info.points}</label><br><br>
+              <label id="PointGetter">Voting Points : ${info.VotingPoints}</label><br><br>
               <button onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -185,9 +185,9 @@
                 <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
                 <br><br>
                 <label> Voting Method </label><br>
-                <input type="checkbox" id="weight1" name="voting" value="Conventional" onclick="onlyOne(this)">
+                <input type="checkbox" id="weight1" name="voting" value="Quadratic" onclick="onlyOne(this)">
                 <label for="weight1"> Conventional </label><br>
-                <input type="checkbox" id="weight2" name="voting" value="Quadratic" onclick="onlyOne(this)">
+                <input type="checkbox" id="weight2" name="voting" value="Conventional" onclick="onlyOne(this)">
                 <label for="weight2">Quadratic</label><br>
                 <input type="checkbox" id="weight3" name="voting" value="First-Past-the-Post" onclick="onlyOne(this)">
                 <label for="weight3">First-Past-the-Post</label><br>
@@ -223,17 +223,17 @@
         };
 
 
-        const handleSetPoint = async (value) => {
-            if (value == null || value == "") window.alert("Null value")
-            else {
-                await Memcontract.methods.pointsSetter(senderAccount, value).send({ from: senderAccount});
-                let temp1 = document.getElementById(`PointSetter`);
-                temp1.innerText = "";
-                let temp2 = document.getElementById(`PointGetter`);
-                temp2.innerText = value;
-                console.log("Success");
-            }
-        }
+        // const handleSetPoint = async (value) => {
+        //     if (value == null || value == "") window.alert("Null value")
+        //     else {
+        //         await Memcontract.methods.pointsSetter(senderAccount, value).send({ from: senderAccount});
+        //         let temp1 = document.getElementById(`PointSetter`);
+        //         temp1.innerText = "";
+        //         let temp2 = document.getElementById(`PointGetter`);
+        //         temp2.innerText = value;
+        //         console.log("Success");
+        //     }
+        // }
 
         const setTime = (detail) => {
 
@@ -254,12 +254,11 @@
 
         const handleDisplayStatus = async () => {
             const posts = await pVcontract.methods.totalPost().call()
+            
             for (var i = posts.length - 1; i >= 0; i--) {
-                const singlePost = await pVcontract.methods.getPost(posts[i], senderAccount).call();
-                // <p id="id"> ${posts[i]} </p>
-                // const isComment = singlePost.parent;
-
-                const userVoteCount = await pVcontract.methods.memVote(posts[i], senderAccount).call();
+                const singlePost = await pVcontract.methods.getPost(posts[i]).call({ from: senderAccount});
+                if (singlePost.votingMechanism == 0) continue;
+                const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
 
                 const target = document.querySelector("#app");
                 let contractHtml = "";
@@ -271,8 +270,9 @@
                         contractHtml = `
                         <div class="card">
                         <p id="id"></p>
-                        <label name="User" class="info">${singlePost.user}</label> <br>
-                        <label name="time" class="info">${timestamp}</label>
+                        <label name="User" class="info">User ID: ${singlePost.user}</label> <br>
+                        <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism}</label><br>
+                        <label name="time" class="info">Time: ${timestamp}</label>
                         <br><br>
 
                         <div class="info">${singlePost.value}</div>
@@ -281,7 +281,7 @@
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
                             <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
                             <br> <br>
-                            <input name="weight-input${posts[i]}" type="number" min="1" max="100" step="1">
+                            <input name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" step="1">
                             <p id = "voteWeight${posts[i]}"></p>
                             
                             </div>
@@ -296,35 +296,34 @@
                     contractHtml = `
                 <div class="card">
                   <p id="id"> </p>
-                  <br><label name="User"> ${singlePost.user}<label> <br>
-                    <label name="time">${timestamp}</label>
+                  <br><label name="User">User ID: ${singlePost.user}<label> <br>
+                    <label name="time">Time: ${timestamp}</label>
                   <br><br>
                   
                   <div class="info">${singlePost.value}</div>
                 </div>
               `;
             }
-                target.innerHTML = target.innerHTML + contractHtml;
-                const voteButton = document.getElementById(`upvote${posts[i]}`);
-                const voteButton1 = document.getElementById(`downvote${posts[i]}`);
-
-                // const UpCount = document.getElementById(`UPC${posts[i]}`);
-                // const DwCount = document.getElementById(`DNC${posts[i]}`);
-                
-                if (userVoteCount.upvotes>0) {
-                    voteButton.disabled = true;
-                    voteButton1.disabled = true;
-                    // UpCount.innerHTML = "";
-                    // DwCount.innerHTML = "";
-                    voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
-                }
-                if (userVoteCount.downvotes>0) {
-                    voteButton.disabled = true;
-                    voteButton1.disabled = true;
-                    // UpCount.innerHTML = "";
-                    // DwCount.innerHTML = "";
-                    voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
-                }
+            
+            target.innerHTML = target.innerHTML + contractHtml;
+            const voteButton = document.getElementById(`upvote${posts[i]}`);
+            const voteButton1 = document.getElementById(`downvote${posts[i]}`);
+            const voteText = document.getElementsByName(`weight-input${posts[i]}`);
+            console.log(voteText)
+            if (singlePost.votingMechanism == 1) voteText.style.display = "none";
+            
+            if (userVoteCount.upvotes>0) {
+                voteButton.disabled = true;
+                voteButton1.disabled = true;
+                voteText.style.display = "none";
+                voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
+            }
+            if (userVoteCount.downvotes>0) {
+                voteButton.disabled = true;
+                voteButton1.disabled = true;
+                voteText.style.display = "none";
+                voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
+            }
 
                 // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
                 //     // options here
@@ -345,15 +344,14 @@
         const handleDisplayComment = async () => {
             const posts = await pVcontract.methods.totalCmnt().call()
             for (var i = posts.length - 1; i >= 0; i--) {
-                const singlePost = await pVcontract.methods.getPost(posts[i], senderAccount).call();
-                // <p id="id"> ${posts[i]} </p>
-                // const isComment = singlePost.parent;
+                const singlePost = await pVcontract.methods.getPost(posts[i]).call({from: senderAccount});
+                if (singlePost.timestamp == 0) continue;
                 const target = document.querySelector("#app");
                 let contractHtml = "";
                 const timestamp = setTime(singlePost);     
                 // console.log({singlePost});
 
-                const userVoteCount = await pVcontract.methods.memVote(posts[i], senderAccount).call();
+                const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
 
                 if (userPaid && KYCdone){
                     if (singlePost.parent!=0)
@@ -362,8 +360,9 @@
                         commentHtml = `
                         <div class="card">
                         <p id="id"></p>
-                        <label name="User" class="info">${singlePost.user}</label> <br>
-                        <label name="time" class="info">${timestamp}</label>
+                        <label name="User" class="info">User ID: ${singlePost.user}</label> <br>
+                        <!-- <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism}</label><br> -->
+                        <label name="time" class="info">Time: ${timestamp}</label>
                         <br><br>
 
                         <div class="info">${singlePost.value}</div>
@@ -409,7 +408,7 @@
             const voteButton = document.getElementById(`upvote${msg}`);
             const voteButton1 = document.getElementById(`downvote${msg}`);
             const voteButton2 = document.getElementById(`vote${msg}`);
-            const value = document.getElementById(`UPC${msg}`).value
+            const votingMech = document.getElementById(`weight-input${msg}`).value;
             
             if (value == null || value == "") window.alert("Null value")
 
@@ -420,7 +419,7 @@
                     console.log("Enough points")
                     voteButton.disabled = true;
                     voteButton.innerText = "Upvoting";
-                    await pVcontract.methods.Upvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "1500" });
+                    await pVcontract.methods.upvote(msg, votingMech).send({ from: senderAccount, gasPrice: "1500" });
                     const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
                     // handleSetPoint((Meminfo.points-(value*value)));
 
@@ -540,25 +539,29 @@
         const handleSendPost = async e => {
             e.preventDefault();
             const message = new FormData(e.target).get("status");
+            var checkboxes = document.getElementsByName('voting')
+            // console.log(checkboxes.length); return;
+            var i = 0;
+            for (var j=1; j<=checkboxes.length; j++) {
+                var checkBox = document.getElementById(`weight${j}`);
+                if (checkBox.checked == true) {
+                    i = j;
+                    console.log(i);
+                    break;
+                }
+            }
+            if (i == 0) {
+                window.alert("Select Voting Mech");
+                return;
+            }
             if (message.length > 0) {
-                // Postedmessage = message;
                 const postStatus = document.getElementById("post_status");
                 postStatus.disabled = true;
                 postStatus.innerText = "Posting...";
                 console.log("Posting");
-                await pVcontract.methods.postStatus(`${senderAccount}`, message).send({ from: senderAccount });
-                // postStatus.disabled = false;
-                // postStatus.innerText = "Post";
+                await pVcontract.methods.addPost(message, i).send({ from: senderAccount });
                 console.log("Posted");
                 render();
-                // let msgId = await pVcontract.methods.allPost(`${senderAccount}`).call();
-                // console.log(msgId);
-                // msgId = msgId[msgId.length-1];
-                // messageId = msgId;
-                // const own = await pVcontract.methods.statusOwner(msgId).call();
-                // console.log(own);
-                // owner = own;
-                // handlePostedStatus();
             }
         };
 

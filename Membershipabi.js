@@ -214,24 +214,23 @@ const contractABI1 = `[
 		"type": "event"
 	},
 	{
-		"constant": true,
+		"constant": false,
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "user",
+				"name": "_add",
 				"type": "address"
-			}
-		],
-		"name": "ChampionGetter",
-		"outputs": [
+			},
 			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
+				"internalType": "uint256",
+				"name": "_val",
+				"type": "uint256"
 			}
 		],
+		"name": "addVotingPoints",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -280,27 +279,6 @@ const contractABI1 = `[
 				"internalType": "uint256[]",
 				"name": "",
 				"type": "uint256[]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "certifierGetter",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
 			}
 		],
 		"payable": false,
@@ -456,6 +434,27 @@ const contractABI1 = `[
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "_add",
+				"type": "address"
+			}
+		],
+		"name": "getVotingPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "",
 				"type": "address"
 			}
@@ -494,7 +493,7 @@ const contractABI1 = `[
 			},
 			{
 				"internalType": "uint256",
-				"name": "points",
+				"name": "VotingPoints",
 				"type": "uint256"
 			}
 		],
@@ -577,27 +576,6 @@ const contractABI1 = `[
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "kycGetter",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -730,27 +708,6 @@ const contractABI1 = `[
 		"type": "function"
 	},
 	{
-		"constant": true,
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			}
-		],
-		"name": "paymentGetter",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"constant": false,
 		"inputs": [
 			{
@@ -760,47 +717,6 @@ const contractABI1 = `[
 			}
 		],
 		"name": "paymentUpdate",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_add",
-				"type": "address"
-			}
-		],
-		"name": "pointsGetter",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_add",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_val",
-				"type": "uint256"
-			}
-		],
-		"name": "pointsSetter",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -839,6 +755,21 @@ const contractABI1 = `[
 		"constant": false,
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "_add",
+				"type": "address"
+			}
+		],
+		"name": "setContractAddress",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
 				"internalType": "string",
 				"name": "contractURI",
 				"type": "string"
@@ -860,6 +791,26 @@ const contractABI1 = `[
 			}
 		],
 		"name": "setTokenURIPrefix",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_add",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_val",
+				"type": "uint256"
+			}
+		],
+		"name": "subVotingPoints",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",

@@ -963,6 +963,7 @@ contract UserToken is MembershipToken {
     uint tokenID = 0;
     
     address admin;
+    address contractAddress;
     
     // MemberDetail detail;
     //mapping(address=>bool) isMember;
@@ -989,20 +990,26 @@ contract UserToken is MembershipToken {
         return tokenID;
     }
     
+    function setContractAddress(address _add) public onlyOwner {
+        contractAddress = _add;
+    }
+    
     function membership(address user) public view returns(uint) {
         return info[user].id;
     }
     
-    function addVotingPoints(address _add, uint _val) public onlyOwner {
+    function addVotingPoints(address _add, uint _val) public {
+        require(msg.sender == admin || msg.sender == contractAddress,"Only Admin or Contract");
         info[_add].VotingPoints += _val;
     }
     
-    function subVotingPoints(address _add, uint _val) public onlyOwner {
+    function subVotingPoints(address _add, uint _val) public {
+        require(msg.sender == contractAddress,"Only Admin or Contract");
         require(info[_add].VotingPoints >= _val,"Not sufficient Voting Points");
         info[_add].VotingPoints -= _val;
     }
     
-    function getUserVotingPoints(address _add) external view returns(uint){
+    function getVotingPoints(address _add) external view returns(uint){
         return info[_add].VotingPoints;
     }
     

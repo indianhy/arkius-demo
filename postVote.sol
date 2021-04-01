@@ -1,29 +1,38 @@
-pragma solidity 0.5.7;
+pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
-interface membership {
-    
+interface Membership {
+    struct MemberDetail {
+        uint id;
+        bool MemberPaid;
+        bool MemberKYC;
+        bool Certifier;
+        bool Champion;
+        string[] Values;
+        string Entity;
+        uint VotingPoints;
+    }
+
     function isMember(address user) external view returns(bool);
     
-    function paymentGetter(address user) external view returns(bool);
+    function getVotingPoints(address user) external view returns(uint);
     
-    function kycGetter(address user) external view returns(bool);
+    function info(address _add) external view returns(MemberDetail memory);
     
-    function pointsGetter(address _add) external view returns(uint);
-    
-    function pointsSetter(address _add, uint _val) external;
+    function subVotingPoints(address _add, uint _val) external;
     
 }
 
-contract ballot { 
+contract Voting { 
     
-    struct post {
+    struct Post {
         address user;
         uint parent;
         string value;
         uint upvote;
         uint timestamp;
         uint downvote;
+        uint votingMechanism;
     }
     
     struct member {
@@ -38,6 +47,7 @@ contract ballot {
         uint parent;
         uint timestamp;
         uint downvote;
+        uint votingMechanism;
         uint hasUpvoted;
         uint hasDownvoted;
     }
@@ -45,18 +55,27 @@ contract ballot {
     uint256 id = 0;
     
     
-    mapping(uint => post) public pst;
-    mapping(uint => mapping(address => member)) public memVote;
+    mapping(uint => Post) public posts;
+    mapping(uint => mapping(address => member)) public memberVote;
     
-    uint256[] posts;
-    uint256[] totalpost;
-    uint256[] totalcmnt;
+    uint256[] allIDs;
+    uint256[] postIDs;
+    uint256[] commentIDs;
     
-    membership mem;
+    Membership mem;
     
-    constructor(membership _address) public {
+    address admin;
+    
+    constructor(Membership _address) public {
+        admin = msg.sender;
         mem = _address;
     }
+
+    modifier onlyOwner() {
+        require(msg.sender == admin,"You are not an admin");
+        _;
+    }
+
     
     modifier arkMember(address user) {
         require(mem.isMember(user),"You are not a member");
@@ -64,193 +83,132 @@ contract ballot {
     }
     
     modifier arkVoter(address user) {
-        require(mem.paymentGetter(user),"You are not Paid");
-        require(mem.kycGetter(user),"You are not verified");
+        
+        require(mem.info(user).MemberPaid,"You are not Paid");
+        require(mem.info(user).MemberKYC,"You are not verified");
         _;
     }
     
-    function getPost(uint id, address _add) public view returns(returnPost memory) {
-        returnPost memory rpst = returnPost(pst[id].user, pst[id].value, pst[id].upvote, pst[id].parent, pst[id].timestamp, pst[id].downvote, memVote[id][_add].upvotes, memVote[id][_add].downvotes);
+    function getPost(uint _id) public view arkMember(msg.sender) returns(returnPost memory) {
+        returnPost memory rpst = returnPost(posts[_id].user, posts[_id].value, posts[_id].upvote, posts[_id].parent, posts[_id].timestamp, posts[_id].downvote, posts[_id].votingMechanism, memberVote[id][msg.sender].upvotes, memberVote[_id][msg.sender].downvotes);
         return rpst;
     } 
     
     function totalPost() public view returns(uint256[] memory) {
-        return totalpost;
+        return allIDs;
     }
     
     function totalCmnt() public view returns(uint256[] memory) {
-        return totalcmnt;
+        return commentIDs;
     }
     
-    function allPost() public view returns(uint[] memory) {
-        return posts;
+    function allPosts() public view returns(uint[] memory) {
+        return postIDs;
     }
-    
-    function postStatus(address user, string memory _value) public arkMember(user) returns(uint) {
+
+    function addPost(string memory _value, uint votingMechanism) public arkVoter(msg.sender) returns(uint) {
         id += 1;
-        pst[id].user = user;
-        pst[id].value = _value;
-        pst[id].upvote = 0;
-        pst[id].parent = 0;
-        pst[id].downvote = 0;
-        pst[id].timestamp = now;
-        posts.push(id);
-        totalpost.push(id);
+        posts[id].user = msg.sender;
+        posts[id].value = _value;
+        posts[id].timestamp = now;
+        posts[id].votingMechanism = votingMechanism;
+        postIDs.push(id);
+        allIDs.push(id);
         return id;
     }
     
     function statusOwner(uint _id) public view returns(address) {
-        if (keccak256(bytes(pst[_id].value)) != keccak256(bytes(""))) {
-            return pst[_id].user;
-        }
-        else {
-            revert("Invalid Input");
-        }
+        require(posts[_id].user!=address(0),"Invalid id");
+        return posts[_id].user;
     }
     
-    function deletePost(uint _id, address _add) public {
-        require(pst[_id].user == _add,"You are an Imposter");
-        if (keccak256(bytes(pst[_id].value)) != keccak256(bytes(""))) {
-            pst[_id].user = address(0);
-            pst[_id].value = "";
-            pst[_id].upvote = 0;
-            pst[_id].downvote = 0;
-            pst[_id].parent = 0;
-            pst[_id].timestamp = 0;
-        }
+    function deletePost(uint _id) public {
+        require(posts[_id].user == msg.sender,"You are an Imposter");
+            posts[_id].user = address(0);
+            posts[_id].value = "";
+            posts[_id].upvote = 0;
+            posts[_id].downvote = 0;
+            posts[_id].parent = 0;
+            posts[_id].timestamp = 0;
+            posts[_id].votingMechanism = 0;
+        
     }
     
-    function postComment(address user, uint _parent, string memory _value) public arkMember(user) {
+    function postComment( uint _parent, string memory _value) public arkMember(msg.sender) {
         id += 1;
-        pst[id].user = user;
-        pst[id].parent = _parent;
-        pst[id].value = _value; 
-        pst[id].upvote = 0;
-        pst[id].downvote = 0;
-        pst[id].timestamp = now;
-        totalcmnt.push(id);
-        posts.push(id);
+        posts[id].user = msg.sender;
+        posts[id].parent = _parent;
+        posts[id].value = _value; 
+        posts[id].upvote = 0;
+        posts[id].downvote = 0;
+        posts[id].timestamp = now;
+        commentIDs.push(id);
+        postIDs.push(id);
     }
     
     function totalPoints(address user) public view returns(uint) {
-        return mem.pointsGetter(user);
+        return mem.info(user).VotingPoints;
     }
     
     function totalUpvote(address user, uint _id) public arkVoter(user) view returns(uint) {
-            return pst[_id].upvote;
+            return posts[_id].upvote;
     }
 
     function totalDownvote(address user, uint _id) public arkVoter(user) view returns(uint) {
-            return pst[_id].downvote;
+            return posts[_id].downvote;
     }    
     
     function message(address user, uint _id) public arkMember(user) view returns(string memory) {
-            return pst[_id].value;
+            return posts[_id].value;
     }
     
     function totalVote(address user, uint _id) public arkVoter(user) view returns(int) {
-            return (int(pst[_id].upvote) - int(pst[_id].downvote));
+            return (int(posts[_id].upvote) - int(posts[_id].downvote));
+    }
+
+    function upvote(uint _id, uint vote) public arkVoter(msg.sender) {
+        address user = msg.sender;
+        require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
+        uint votingMechanism = posts[_id].votingMechanism;
+        if(votingMechanism == 1){
+            upvoteQuadratic(user, _id, vote);
+        }
     }
     
-    // function Upvote(address user, uint _id) public arkVoter(user) {
-    //     if (memVote[_id][user].downvotes == 0) {
-            
-    //         uint point = memVote[_id][user].upvotes;
-    //         uint balance = mem.pointsGetter(user);
-            
-    //         point = (2 * point) + 1;
-    //         if (point > balance) {
-    //             revert("Not enough points");
-    //         }
-            
-    //         memVote[_id][user].upvotes += 1;
-    //         balance = balance - point;
-            
-    //         mem.pointsSetter(user, balance);
-            
-    //         pst[_id].upvote += 1;
-    //     }
-    //     else {
-            
-    //         memVote[_id][user].downvotes -= 1;
-            
-    //         uint point = memVote[_id][user].downvotes;
-    //         uint balance = mem.pointsGetter(user) + (2*point) + 1;
 
-    //         mem.pointsSetter(user, balance);
-            
-    //         pst[_id].upvote += 1;
-    //         pst[_id].downvote -= 1;
-    //     }
-    // }
-    
-    // function Downvote(address user, uint _id) public arkVoter(user) {
-    //     if (memVote[_id][user].upvotes == 0) {
-            
-    //         uint point = memVote[_id][user].downvotes;
-    //         uint balance = mem.pointsGetter(user);
-            
-    //         point = (2 * point) + 1;
-    //         if (point > balance) {
-    //             revert("Not enough points");
-    //         }
-            
-    //         memVote[_id][user].downvotes += 1;
-    //         balance = balance - point;
-            
-    //         mem.pointsSetter(user, balance);
-            
-    //         pst[_id].downvote += 1;
-    //     }
-    //     else {
-            
-    //         memVote[_id][user].upvotes -= 1;
-            
-    //         uint point = memVote[_id][user].upvotes;
-    //         uint balance = mem.pointsGetter(user) + (2*point) + 1;
-
-    //         mem.pointsSetter(user, balance);
-            
-    //         pst[_id].upvote -= 1;
-    //         pst[_id].downvote += 1;
-    //     }
-    // }
-    
-    function Upvote(address user, uint _id, uint vote) public arkVoter(user) {
-        
-        require(memVote[_id][user].downvotes == 0 && memVote[_id][user].upvotes == 0,"Already Voted");
+    function upvoteQuadratic(address user, uint _id, uint vote) internal {
             
         uint point = vote * vote;
-        uint balance = mem.pointsGetter(user);
+        uint balance = mem.getVotingPoints(user);
         
-        if (point > balance) {
+        if (point >= balance) {
             revert("Not enough points");
         }
         
-        memVote[_id][user].upvotes = vote;
-        balance = balance - point;
+        memberVote[_id][user].upvotes = vote;
+       
         
-        mem.pointsSetter(user, balance);
+        mem.subVotingPoints(user, point);
         
-        pst[_id].upvote += 1;
+        posts[_id].upvote += vote;
     }
     
     function Downvote(address user, uint _id, uint vote) public arkVoter(user) {
         
-        require(memVote[_id][user].downvotes == 0 && memVote[_id][user].upvotes == 0,"Already Voted");
+        require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
             
         uint point = vote * vote;
-        uint balance = mem.pointsGetter(user);
+        uint balance = mem.getVotingPoints(user);
         
         if (point > balance) {
             revert("Not enough points");
         }
         
-        memVote[_id][user].downvotes = vote;
+        memberVote[_id][user].downvotes = vote;
         balance = balance - point;
         
-        mem.pointsSetter(user, balance);
+        mem.subVotingPoints(user, balance);
         
-        pst[_id].downvote += 1;
+        posts[_id].downvote += vote;
     }
 }

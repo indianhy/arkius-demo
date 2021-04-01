@@ -956,16 +956,16 @@ contract UserToken is MembershipToken {
         bool Champion;
         string[] Values;
         string Entity;
-        uint points;
+        uint VotingPoints;
     }
 
     bool mutex = false;
-    uint token = 0;
+    uint tokenID = 0;
     
     address admin;
     
     // MemberDetail detail;
-    mapping(address=>bool) memberCheck;
+    //mapping(address=>bool) isMember;
     mapping (address => MemberDetail) public info;
     address[] members;
 
@@ -975,72 +975,53 @@ contract UserToken is MembershipToken {
         // detail = MemberDetail(0,false,false,false);
     }
     
-
     function mint(address user, Fee[] memory fees, uint256 supply, string memory uri) public returns(uint) {
         require(!mutex,"No Reentracy");
-        require(!memberCheck[user], "Already a member");
+        require(!isMember(user), "Already a member");
         mutex = true;
-        token += 1;
-        memberCheck[user] = true;
+        tokenID += 1;
         members.push(user);
-        info[user].MemberPaid = false;
-        info[user].MemberKYC = false;
-        info[user].Certifier = false;
-        info[user].Champion = false;
-        info[user].id = token;
-        super.mint(user, token, fees, supply, uri);
+        info[user].id = tokenID;
+        info[user].VotingPoints = 25;
+        super.mint(user, tokenID, fees, supply, uri);
         // emit mTokenListen(user, id, info[user].MemberKYC, info[user].Certifier, info[user].Champion);
         mutex = false;
-        return token;
+        return tokenID;
     }
     
     function membership(address user) public view returns(uint) {
         return info[user].id;
     }
     
-    function pointsSetter(address _add, uint _val) public {
-        info[_add].points = _val;
+    function addVotingPoints(address _add, uint _val) public onlyOwner {
+        info[_add].VotingPoints += _val;
     }
     
-    function pointsGetter(address _add) external view returns(uint) {
-        return info[_add].points;
+    function subVotingPoints(address _add, uint _val) public onlyOwner {
+        require(info[_add].VotingPoints >= _val,"Not sufficient Voting Points");
+        info[_add].VotingPoints -= _val;
     }
     
-    function certifierGetter(address user) external view returns(bool) {
-        return info[user].Certifier;
+    function getUserVotingPoints(address _add) external view returns(uint){
+        return info[_add].VotingPoints;
     }
     
-    function ChampionGetter(address user) external view returns(bool) {
-        return info[user].Champion;
-    }
-    
-    function isMember(address user) external view returns(bool) {
+    function isMember(address user) public view returns(bool) {
         if (info[user].id > 0){
             return true;    
         }
         return false;
     }
     
-    function paymentGetter(address user) external view returns(bool) {
-        return info[user].MemberPaid;
-    }
-    
-    function kycGetter(address user) external view returns(bool) {
-        return info[user].MemberKYC;
-    }
-
-    function entityUpdate(address user, string memory _value) public {
-        require(msg.sender == admin,"You are not owner");
+    function entityUpdate(address user, string memory _value) public onlyOwner {
         info[user].Entity = _value;
     }
     
-    function paymentUpdate(address user) public {
-        require(msg.sender == admin,"You are not owner");
+    function paymentUpdate(address user) public onlyOwner {
         info[user].MemberPaid = true;
     }
     
-    function kycUpdate(address user) public {
-        require(msg.sender == admin,"You are not owner");
+    function kycUpdate(address user) public onlyOwner {
         info[user].MemberKYC = true;
     }
     
@@ -1056,8 +1037,7 @@ contract UserToken is MembershipToken {
         info[user].Certifier = true;
     }
 
-    function championUpdate(address user) public {
-        require(msg.sender == admin,"You are not owner");
+    function championUpdate(address user) public onlyOwner {
         info[user].Champion = true;
     }
     
@@ -1101,83 +1081,3 @@ contract UserToken is MembershipToken {
         return element;
     }
 }
-
-
-
-
-
-
-
-
-
-
-// pragma solidity >=0.6.0 <0.8.0;
-
-// import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol';
-
-
-// contract Membership is ERC721{
-//     uint public _tokenIds = 0;
-    
-//     struct member{
-//         string membername;
-//         uint tokenid;
-//         bool tokencreate;
-//     }
-//     mapping(address=>member) public members;
-//     address public owner;
-//     mapping(string=>uint) public membertokenid;
-//     uint public totalmember;
-    
-//     constructor() ERC721("MembershipToken","MEMT") public {
-//         owner=msg.sender;
-        
-//     }
-    
-//     function join(string memory _name) public returns(uint) {
-//         address memberadd = msg.sender;
-//         require(memberadd != address(0));
-//         require(bytes(_name).length != 0);
-//         require(!members[memberadd].tokencreate,"member is already added");
-//         members[memberadd].membername=_name;
-//         uint id = mintNewToken(_name,memberadd);
-//         members[memberadd].tokencreate = true;
-//         membertokenid[_name]=id;
-//         members[memberadd].tokenid = id;
-//         totalmember+=1;
-//         return id;
-        
-//     }
-    
-//     function mintNewToken(string memory tokenURI,address _address) internal returns(uint256){
-//         _tokenIds++;
-//         uint256 newItemId=_tokenIds;
-//         _mint(_address,newItemId);
-//         _setTokenURI(newItemId,tokenURI);
-//         return newItemId;
-//     }
-    
-//     function validmember(address _address) public view returns(bool){
-//         return members[_address].tokencreate;
-//     }
-    
-//     function deleteAccount() public {
-//         require(members[msg.sender].tokencreate,"member is not found");
-//         _burn(members[msg.sender].tokenid);
-//         members[msg.sender].tokenid = 0;
-//         members[msg.sender].tokencreate = false ;
-
-//     }
-    
-//     function findId(address _address) public view returns(uint){
-//         require(members[_address].tokencreate,"not a member");
-//         require(_address!=address(0));
-//         return members[_address].tokenid;
-//     }
-    
-//     function nameofmember(address _address) public view returns(string memory){
-//         return members[_address].membername;
-//     }
-    
-    
-// }

@@ -5,7 +5,7 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 
-/** 
+/**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
  */ 
@@ -1015,6 +1015,13 @@ contract UserToken is MembershipToken {
     
     function isMember(address user) public view returns(bool) {
         if (info[user].id > 0){
+            return true;    
+        }
+        return false;
+    }
+    
+    function isVoter(address user) public view returns(bool) {
+        if (info[user].MemberPaid == true && info[user].MemberKYC == true ){
             return true;    
         }
         return false;

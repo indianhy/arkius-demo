@@ -16,6 +16,8 @@ interface Membership {
 
     function isMember(address user) external view returns(bool);
     
+    function isVoter(address user) external view returns(bool);
+    
     function getVotingPoints(address user) external view returns(uint);
     
     function info(address _add) external view returns(MemberDetail memory);
@@ -85,8 +87,7 @@ contract Voting {
     
     modifier arkVoter(address user) {
         
-        require(mem.info(user).MemberPaid,"You are not Paid");
-        require(mem.info(user).MemberKYC,"You are not verified");
+        require(mem.isVoter(user),"You are not a Voter");
         _;
     }
     

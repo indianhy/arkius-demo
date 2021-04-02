@@ -105,8 +105,8 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0x6569462a3fE33854dE8cB6d2822e149350dF6199";
-        let membershipAddress = "0x2310985DB2117D99a37dc6f6F10E01eD4b701C51";
+        let postVoteAddress = "0x5000cAB67825614C978b5D05a82C9b809F6c6145";
+        let membershipAddress = "0xf6e75A7f386ee26D58355247E1FeE21825F7e910";
 
         let senderAccount;
         let owner;
@@ -186,15 +186,9 @@
                 <br><br>
                 <label> Voting Method </label><br>
                 <input type="checkbox" id="weight1" name="voting" value="Quadratic" onclick="onlyOne(this)">
-                <label for="weight1"> Conventional </label><br>
+                <label for="weight1"> Quadratic </label><br>
                 <input type="checkbox" id="weight2" name="voting" value="Conventional" onclick="onlyOne(this)">
-                <label for="weight2">Quadratic</label><br>
-                <input type="checkbox" id="weight3" name="voting" value="First-Past-the-Post" onclick="onlyOne(this)">
-                <label for="weight3">First-Past-the-Post</label><br>
-                <input type="checkbox" id="weight4" name="voting" value="Proportional Voting" onclick="onlyOne(this)">
-                <label for="weight4">Proportional</label><br>
-                <input type="checkbox" id="weight5" name="voting" value="Ranked Choice Voting" onclick="onlyOne(this)">
-                <label for="weight4">Ranked Choice Voting</label><br>
+                <label for="weight2"> Conventional </label><br>
                 <div class="container">
                     <button type="submit" value="Post" id="post_status">Post</button>
                 </div>
@@ -252,6 +246,12 @@
             return timestamp;
         }
 
+        const handleDeletePost = async (msg) => {
+            const singlePost = document.getElementById(`${msg}`);
+            await pVcontract.methods.deletePost(msg).send({from: senderAccount});
+            console.log("Deleted");
+        }
+
         const handleDisplayStatus = async () => {
             const posts = await pVcontract.methods.totalPost().call()
             
@@ -270,18 +270,19 @@
                         contractHtml = `
                         <div class="card">
                         <p id="id"></p>
-                        <label name="User" class="info">User ID: ${singlePost.user}</label> <br>
-                        <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism}</label><br>
+                        <label name="User" class="info">User ID: ${singlePost.user}</label> 
+                        <br>
+                        <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
                         <label name="time" class="info">Time: ${timestamp}</label>
                         <br><br>
 
                         <div class="info">${singlePost.value}</div>
                         <div class="container">                  
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
-                            <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
+                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i],singlePost})>Upvotes</button>
+                            <button id="vote${posts[i]}" onclick=handleVote(${posts[i],singlePost})>Votes</button>
+                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i],singlePost})>Downvotes</button>
                             <br> <br>
-                            <input name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" step="1">
+                            <input name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1">
                             <p id = "voteWeight${posts[i]}"></p>
                             
                             </div>
@@ -304,24 +305,24 @@
                 </div>
               `;
             }
-            
+             
             target.innerHTML = target.innerHTML + contractHtml;
             const voteButton = document.getElementById(`upvote${posts[i]}`);
             const voteButton1 = document.getElementById(`downvote${posts[i]}`);
             const voteText = document.getElementsByName(`weight-input${posts[i]}`);
-            console.log(voteText)
-            if (singlePost.votingMechanism == 1) voteText.style.display = "none";
+            console.log({voteText:voteText[0]})
+            if (singlePost.votingMechanism != 1) voteText[0].style.display = "none";
             
             if (userVoteCount.upvotes>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText.style.display = "none";
+                voteText[0].style.display = "none";
                 voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
             }
             if (userVoteCount.downvotes>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText.style.display = "none";
+                voteText[0].style.display = "none";
                 voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
             }
 
@@ -403,14 +404,16 @@
             }
         };
 
-        const handleUpvote = async (msg) => {
+        const handleUpvote = async (msg, post) => {
             console.log(msg);
             const voteButton = document.getElementById(`upvote${msg}`);
             const voteButton1 = document.getElementById(`downvote${msg}`);
             const voteButton2 = document.getElementById(`vote${msg}`);
+            if(post.votingMechanism ==1)
             const votingMech = document.getElementById(`weight-input${msg}`).value;
             
-            if (value == null || value == "") window.alert("Null value")
+
+            //if (value == null || value == "") window.alert("Null value")
 
             else {
                 const Meminfo = await Memcontract.methods.info(senderAccount).call();
@@ -551,7 +554,7 @@
                 }
             }
             if (i == 0) {
-                window.alert("Select Voting Mech");
+                window.alert("Select Voting Mechanism");
                 return;
             }
             if (message.length > 0) {

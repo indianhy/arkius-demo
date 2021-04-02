@@ -208,8 +208,19 @@
                 KYCdone = KYCdone1;
                 userPaid = userPaid1;
 
-                handleDisplayStatus().then( () => {
+                handleDisplayStatus().then( (posts) => {
                         handleDisplayComment();
+                        for (var i = posts.length - 1; i >= 0; i--) {
+                        let input = document.getElementById(`weight-input${posts[i]}`);
+                        let log = document.getElementById(`voteWeight${posts[i]}`);
+
+                        input.oninput = handleInput;
+
+                        function handleInput(e) {
+                            console.log({ e })
+                            log.textContent = `Points : ${(e.target.value) * (e.target.value)}`;
+                        }
+                    }
                     }
                 )
 
@@ -339,16 +350,6 @@
             
             console.log({selectElement: document.getElementById(`weight-input${posts[i]}`)})
                
-            let input = document.querySelector(`weight-input${posts[i]}`);
-                let log = document.getElementById(`voteWeight${posts[i]}`);
-
-                if(input!=null)
-                input.oninput = handleInput;
-
-                function handleInput(e) {
-                    console.log({e})
-                    log.textContent = `P: ${(e.target.value)*(e.target.value)}`;
-                }
             //     // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
                 //     // options here
                 //     wrapperClass: 'ispin-wrapper',
@@ -362,7 +363,8 @@
                 //     format: String
                 // });
             }
-            
+
+            return posts;
         };
 
         const getPoints = () => {

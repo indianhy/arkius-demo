@@ -162,8 +162,8 @@
 
                 authHtml = `
             <div class="container">
-              <h1>Current user: ${userMetadata.email}</h1>
-              <label id="votingPoints">Voting Points : ${info.VotingPoints}</label><br><br>
+              <p><strong>Current user:</strong> ${userMetadata.email}</p>
+              <label id="votingPoints"><strong>Voting Points :</strong> ${info.VotingPoints}</label><br><br>
               <button onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -183,7 +183,7 @@
             
             <form onsubmit=handleSendPost(event) class="container">
               <div class="card">
-                <h1>Post Status</h1>
+                <h3>Create Post</h3>
                 <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
                 <br><br>
                 <label> Voting Method </label><br>
@@ -273,20 +273,20 @@
                         contractHtml = `
                         <div class="card">
                         <p id="id"></p>
-                        <label name="User" class="info">User ID: ${singlePost.user}</label> 
+                        <label name="User" ><strong>User ID:</strong> ${singlePost.user}</label> 
                         <br>
-                        <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
-                        <label name="time" class="info">Time: ${timestamp}</label>
+                        <label name="votemech" ><strong>Voting Method:</strong> ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
+                        <label name="time" ><strong>Time:</strong> ${timestamp}</label>
                         <br><br>
 
-                        <div class="info">${singlePost.value}</div>
+                        <div >${singlePost.value}</div>
                         <div class="container">                  
                             <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
                             <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
                             <br> <br>
-                            <input id="weight-input${posts[i]}" name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1">
-                            <label id = "voteWeight${posts[i]}"></label>
+                            <input id="weight-input${posts[i]}"  name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1" >
+                            <label id = "voteWeight${posts[i]}" style="color:red">Votin Points required :</label>
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
@@ -329,12 +329,29 @@
                 voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
             }
 
-            document.getElementById(`weight-input${posts[i]}`).onclick = ()=> {
-                let v = document.getElementById(`weight-input${posts[i]}`).value;
-                document.getElementById(`voteWeight${posts[i]}`).innerText = v*v;
+            document.getElementById(`weight-input${posts[i]}`).onchange = ()=> {
+                let v = document.getElementById(`weight-input${posts[i]}`).value
+                console.log({v});
+                document.getElementById(`voteWeight${posts[i]}`).innerText = `P: ${v*v}`;
             }
 
-                // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
+            
+            
+            console.log({selectElement: document.getElementById(`weight-input${posts[i]}`)})
+                $(`weight-input${posts[i]}`).click(function () {
+                    alert("Handler for .click() called.");
+                });
+            
+            let input = document.querySelector(`weight-input${posts[i]}`);
+                let log = document.getElementById(`voteWeight${posts[i]}`);
+
+                input.oninput = handleInput;
+
+                function handleInput(e) {
+                    console.log({e})
+                    log.textContent = `P: ${(e.target.value)*(e.target.value)}`;
+                }
+            //     // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
                 //     // options here
                 //     wrapperClass: 'ispin-wrapper',
                 //     buttonsClass: 'ispin-button',
@@ -349,6 +366,16 @@
             }
             
         };
+
+        $(`#weight-input5`).click(function () {
+                alert("Handler for .click() called.");
+            });
+
+        const getPoints = () => {
+                let v = document.getElementById(`weight-input${posts[i]}`).value
+                console.log({ v });
+                document.getElementById(`voteWeight${posts[i]}`).innerText = `P: ${v * v}`;
+            }
 
         const handleDisplayComment = async () => {
             const posts = await pVcontract.methods.totalCmnt().call()
@@ -458,41 +485,50 @@
         };
 
         const handleDownvote = async (msg) => {
-            // console.log(msg);
-            const voteButton = document.getElementById(`downvote${msg}`);
-            const voteButton1 = document.getElementById(`upvote${msg}`);
-            const voteButton2 = document.getElementById(`vote${msg}`);
-            const value = document.getElementById(`DNC${msg}`).value
-            // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-            if (value == null || value == "") window.alert("Null value")
+                const post = allPosts[msg];
+                console.log({ msg, post });
+                const voteButton = document.getElementById(`downvote${msg}`);
+                const voteButton1 = document.getElementById(`upvote${msg}`);
+                const voteButton2 = document.getElementById(`vote${msg}`);
+                const votingPoints = document.getElementById(`votingPoints`);
+                let votingMech;
+                if (post.votingMechanism == 1)
+                    votingMech = document.getElementById(`weight-input${msg}`).value;
+                else votingMech = 1;
 
-            else {
-                const Meminfo = await Memcontract.methods.info(senderAccount).call();
-                console.log(Meminfo.points)
-                if (value*value <= Meminfo.points){
-                    console.log("Enough points")
+                if (votingMech == null || votingMech == "") window.alert("Null value")
+
+                else {
+                    const Meminfo = votingPoints.innerText;//await Memcontract.methods.info(senderAccount).call();
+                    let votingPointsN = parseInt(Meminfo.split(':')[1])
+                    console.log({ votingPointsN, votingMech })
+                    if (votingMech * votingMech <= votingPointsN) {
+                        console.log("Enough points")
+                        voteButton.disabled = true;
+                        voteButton.innerText = "Downvoting";
+                        await pVcontract.methods.downvote( msg, votingMech).send({ from: senderAccount });
+                        // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+                        // handleSetPoint((Meminfo.points-(value*value)));
+
+                        votingPoints.innerText = `Voting Points : ${votingPointsN - (votingMech * votingMech)}`
+                        voteButton1.innerText = `Upvote`;
+                        voteButton.innerText = `Downvoted: ${votingMech}`;
+                    }
+                    else {
+                        window.alert("Not enough Voting Points!");
+                        return;
+                    }
+
+                    voteButton1.disabled = true;
                     voteButton.disabled = true;
-                    voteButton.innerText = "Downvoting";
-                    await pVcontract.methods.Downvote(senderAccount, msg, value).send({ from: senderAccount, gasPrice: "500" });
-                    const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
-                    handleSetPoint((Meminfo.points-(value*value)));
-
-                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
-                    voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
-                    
-                    let userVote;
-                    if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
-                    else userVote = singlePost.hasDownvoted;
+                    voteButton2.innerText = "Votes";
+                    console.log("Voted");
+                    if (post.votingMechanism == 1)
+                        document.getElementById(`weight-input${msg}`).value = "";
                 }
-                value.innerText = "";
-                voteButton1.disabled = true;
-                voteButton.disabled = true;
-                voteButton2.innerText = "Votes";
-                console.log("Voted");
-            }
-        };
-
-        const handleVote = async (msg) => {
+            };
+        
+    const handleVote = async (msg) => {
             // console.log(msg);
             const totalVotes = await pVcontract.methods.totalVote(senderAccount, msg).call();
             const temp = document.getElementById(`vote${msg}`);
@@ -603,9 +639,9 @@
     <!-- <h2>Feed</h2> -->
 
     <div class="row">
-        <div class="column left" style="background-color:#aaa;">
+        <div class="column left" style="background-color:#ffff;">
         </div>
-        <div id="app" class="column middle" style="background-color:#ddd;">
+        <div id="app" class="column middle" style="background-color:#abdcf8;">
             <div class="container">Loading...</div>
             <!-- <div class="card">
             <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
@@ -627,7 +663,7 @@
             </div>
           </div> -->
         </div>
-        <div class="column right" style="background-color:#aaa;">
+        <div class="column right" style="background-color:#ffff;">
         </div>
     </div>
 

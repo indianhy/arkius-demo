@@ -286,7 +286,7 @@
                             <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
                             <br> <br>
                             <input id="weight-input${posts[i]}"  name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1" >
-                            <label id = "voteWeight${posts[i]}" style="color:red">Votin Points required :</label>
+                            <label id = "voteWeight${posts[i]}" style="color:red"></label>
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
@@ -338,13 +338,11 @@
             
             
             console.log({selectElement: document.getElementById(`weight-input${posts[i]}`)})
-                $(`weight-input${posts[i]}`).click(function () {
-                    alert("Handler for .click() called.");
-                });
-            
+               
             let input = document.querySelector(`weight-input${posts[i]}`);
                 let log = document.getElementById(`voteWeight${posts[i]}`);
 
+                if(input!=null)
                 input.oninput = handleInput;
 
                 function handleInput(e) {
@@ -366,10 +364,6 @@
             }
             
         };
-
-        $(`#weight-input5`).click(function () {
-                alert("Handler for .click() called.");
-            });
 
         const getPoints = () => {
                 let v = document.getElementById(`weight-input${posts[i]}`).value
@@ -479,8 +473,9 @@
                 voteButton.disabled = true;
                 voteButton2.innerText = "Votes";
                 console.log("Voted");
-                if (post.votingMechanism == 1)
-                    document.getElementById(`weight-input${msg}`).value = "";
+                if (post.votingMechanism == 1){
+                    document.getElementById(`weight-input${msg}`).visibility = "hidden";
+                document.getElementById(`voteWeight${posts[i]}`).innerText = ``;}
             }
         };
 

@@ -114,6 +114,8 @@
         let KYCdone;
         let userPaid;
 
+        const allPosts = {}
+
         let pVcontract = new web3.eth.Contract(
             JSON.parse(contractABI),
             postVoteAddress
@@ -161,7 +163,7 @@
                 authHtml = `
             <div class="container">
               <h1>Current user: ${userMetadata.email}</h1>
-              <label id="PointGetter">Voting Points : ${info.VotingPoints}</label><br><br>
+              <label id="votingPoints">Voting Points : ${info.VotingPoints}</label><br><br>
               <button onclick="handleLogout()">Logout</button>
             </div>
           `;
@@ -267,6 +269,7 @@
                 if (userPaid && KYCdone){
                     if (singlePost.parent==0)
                     {
+                        allPosts[posts[i]]=singlePost;
                         contractHtml = `
                         <div class="card">
                         <p id="id"></p>
@@ -278,12 +281,12 @@
 
                         <div class="info">${singlePost.value}</div>
                         <div class="container">                  
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i],singlePost})>Upvotes</button>
-                            <button id="vote${posts[i]}" onclick=handleVote(${posts[i],singlePost})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i],singlePost})>Downvotes</button>
+                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
+                            <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
+                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
                             <br> <br>
-                            <input name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1">
-                            <p id = "voteWeight${posts[i]}"></p>
+                            <input id="weight-input${posts[i]}" name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1">
+                            <label id = "voteWeight${posts[i]}"></label>
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
@@ -324,6 +327,11 @@
                 voteButton1.disabled = true;
                 voteText[0].style.display = "none";
                 voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
+            }
+
+            document.getElementById(`weight-input${posts[i]}`).onclick = ()=> {
+                let v = document.getElementById(`weight-input${posts[i]}`).value;
+                document.getElementById(`voteWeight${posts[i]}`).innerText = v*v;
             }
 
                 // let spinner = new ISpin(document.getElementById(`weight-input${posts[i]}`), {
@@ -404,40 +412,48 @@
             }
         };
 
-        const handleUpvote = async (msg, post) => {
-            console.log(msg);
+        const handleUpvote = async (msg) => {
+            const post = allPosts[msg];
+            console.log({msg,post});
             const voteButton = document.getElementById(`upvote${msg}`);
             const voteButton1 = document.getElementById(`downvote${msg}`);
             const voteButton2 = document.getElementById(`vote${msg}`);
-            if(post.votingMechanism ==1)
-            const votingMech = document.getElementById(`weight-input${msg}`).value;
+            const votingPoints = document.getElementById(`votingPoints`);
+            let votingMech;
+            if(post.votingMechanism == 1)
+            votingMech = document.getElementById(`weight-input${msg}`).value;
+            else votingMech = 1;
             
 
-            //if (value == null || value == "") window.alert("Null value")
+            if (votingMech == null || votingMech == "") window.alert("Null value")
 
             else {
-                const Meminfo = await Memcontract.methods.info(senderAccount).call();
-                console.log(Meminfo.points)
-                if (value*value <= Meminfo.points){
+                const Meminfo = votingPoints.innerText;//await Memcontract.methods.info(senderAccount).call();
+                let votingPointsN = parseInt(Meminfo.split(':')[1])
+                console.log({votingPointsN,votingMech})
+                if (votingMech*votingMech <= votingPointsN){
                     console.log("Enough points")
                     voteButton.disabled = true;
                     voteButton.innerText = "Upvoting";
-                    await pVcontract.methods.upvote(msg, votingMech).send({ from: senderAccount, gasPrice: "1500" });
-                    const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
+                    await pVcontract.methods.upvote(msg, votingMech).send({ from: senderAccount });
+                    // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
                     // handleSetPoint((Meminfo.points-(value*value)));
 
-                    voteButton1.innerText = `Downvotes: ${singlePost.hasDownvoted}`;
-                    voteButton.innerText = `Upvotes: ${singlePost.hasUpvoted}`;
-                    
-                    let userVote;
-                    if (singlePost.hasUpvoted) userVote = singlePost.hasUpvoted;
-                    else userVote = singlePost.hasDownvoted;
+                    votingPoints.innerText = `Voting Points : ${votingPointsN-(votingMech*votingMech)}`
+                    voteButton1.innerText = `Downvote`;
+                    voteButton.innerText = `Upvoted: ${votingMech}`;
                 }
-                value.innerText = "";
+                else{
+                    window.alert("Not enough Voting Points!");
+                    return;
+                }
+                //value.innerText = "";
                 voteButton1.disabled = true;
                 voteButton.disabled = true;
                 voteButton2.innerText = "Votes";
                 console.log("Voted");
+                if (post.votingMechanism == 1)
+                    document.getElementById(`weight-input${msg}`).value = "";
             }
         };
 

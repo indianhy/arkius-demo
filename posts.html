@@ -322,9 +322,9 @@
                             <div class="container" id="comment${posts[i]}"></div>
                             <textarea id="cmntname${posts[i]}" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea><br><br>
                             <label> Voting Method </label><br>
-                            <input type="checkbox" id="cmntweight1${posts[i]}" name="voting${posts[i]}" value="Quadratic" onclick="onlyOne(this)">
+                            <input type="checkbox" id="cmntweight1${posts[i]}" name="voting" value="Quadratic" onclick="onlyOne(this)">
                             <label for="weight1"> Quadratic </label><br>
-                            <input type="checkbox" id="cmntweight2${posts[i]}" name="voting${posts[i]}" value="Conventional" onclick="onlyOne(this)">
+                            <input type="checkbox" id="cmntweight2${posts[i]}" name="voting" value="Conventional" onclick="onlyOne(this)">
                             <label for="weight2"> Conventional </label><br><br>
                             <button id="cmnt${posts[i]}" onclick=handlecomment(${posts[i]})>Comment</button>
                         </div>`;
@@ -399,7 +399,7 @@
                         <div class="card">
                         <p id="id"></p>
                         <label name="User" class="info">User ID: ${singlePost.user}</label> <br>
-                        <!-- <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism}</label><br> -->
+                        <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
                         <label name="time" class="info">Time: ${timestamp}</label>
                         <br><br>
 
@@ -562,7 +562,7 @@
             const cmntvalue = document.getElementById(`cmntname${prntId}`).value;
             console.log(cmntvalue);
             const button = document.getElementById(`cmnt${prntId}`);
-            const checkboxes = document.getElementsByName(`voting${prntId}`);
+            const checkboxes = document.getElementsByName(`voting`);
             console.log("1", checkboxes);
             var i = 0;
             for (var j=1; j<=checkboxes.length; j++) {
@@ -592,12 +592,14 @@
             // console.log(cmntId)
             console.log("Commented");
             // console.log(cmntDetail);
+            allPosts[cmntId[cmntId.length-1]] = cmntDetail;
             button.disabled = false;
             button.innerText = "Comment";
             let commentHtml = `
                 <div class="card">
                     <p id="id"></p>
                         <label name="User" class="info">${cmntDetail.user}</label> <br>
+                        <label name="votemech" class="info">Voting Method: ${cmntDetail.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
                         <label name="time" class="info">${setTime(cmntDetail)}</label>
                         <br><br>
                         
@@ -606,13 +608,18 @@
 
                         <button id="upvote${cmntId[cmntId.length-1]}" onclick=handleUpvote(${cmntId[cmntId.length-1]})>Upvote</button>
                         <button id="vote${cmntId[cmntId.length-1]}" onclick=handleVote(${cmntId[cmntId.length-1]})>Votes</button>
-                        <button id="downvote${cmntId[cmntId.length-1]}" onclick=handleDownvote(${cmntId[cmntId.length-1]})>Downvote</button><br>
+                        <button id="downvote${cmntId[cmntId.length-1]}" onclick=handleDownvote(${cmntId[cmntId.length-1]})>Downvote</button><br><br>
                         <input id="weight-input${cmntId[cmntId.length-1]}"  name="weight-input${cmntId[cmntId.length-1]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1" >
                         <label id = "voteWeight${cmntId[cmntId.length-1]}" style="color:red"></label>
+                        <p id="cmnt${cmntId[cmntId.length-1]}"></p>
                     </div>
+                    <div class="container1" id="comment${cmntId[cmntId.length-1]}"></div>
                 </div>`;
                 const temp1 = document.getElementById(`comment${cmntDetail.parent}`);
                 temp1.innerHTML = commentHtml + temp1.innerHTML;
+                const voteText = document.getElementsByName(`weight-input${cmntId[cmntId.length-1]}`);
+                console.log({voteText:voteText[0]})
+                if (cmntDetail.votingMechanism != 1) voteText[0].style.display = "none";
             // render();
         }
 

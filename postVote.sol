@@ -32,6 +32,7 @@ contract Voting {
         address user;
         uint parent;
         string value;
+        uint weight;
         uint upvote;
         uint timestamp;
         uint downvote;
@@ -41,9 +42,11 @@ contract Voting {
     struct member {
         uint upvotes;
         uint downvotes;
+        uint[] votes;
     }
     
     struct returnPost {
+        uint weight;
         address user;
         string value;
         uint upvote;
@@ -53,6 +56,7 @@ contract Voting {
         uint votingMechanism;
         uint hasUpvoted;
         uint hasDownvoted;
+        uint[] votes;
     }
     
     uint256 id = 0;
@@ -92,7 +96,7 @@ contract Voting {
     }
     
     function getPost(uint _id) public view arkMember(msg.sender) returns(returnPost memory) {
-        returnPost memory rpst = returnPost(posts[_id].user, posts[_id].value, posts[_id].upvote, posts[_id].parent, posts[_id].timestamp, posts[_id].downvote, posts[_id].votingMechanism, memberVote[id][msg.sender].upvotes, memberVote[_id][msg.sender].downvotes);
+        returnPost memory rpst = returnPost(posts[_id].weight, posts[_id].user, posts[_id].value, posts[_id].upvote, posts[_id].parent, posts[_id].timestamp, posts[_id].downvote, posts[_id].votingMechanism, memberVote[id][msg.sender].upvotes, memberVote[_id][msg.sender].downvotes, memberVote[id][msg.sender].votes);
         return rpst;
     } 
     
@@ -108,11 +112,12 @@ contract Voting {
         return postIDs;
     }
 
-    function addPost(string memory _value, uint votingMechanism) public arkMember(msg.sender) returns(uint) {
+    function addPost(string memory _value, uint votingMechanism, uint wt) public arkMember(msg.sender) returns(uint) {
         id += 1;
         posts[id].user = msg.sender;
         posts[id].value = _value;
         posts[id].timestamp = now;
+        posts[id].weight = wt;
         posts[id].votingMechanism = votingMechanism;
         postIDs.push(id);
         allIDs.push(id);
@@ -130,19 +135,21 @@ contract Voting {
             posts[_id].value = "";
             posts[_id].upvote = 0;
             posts[_id].downvote = 0;
+            posts[id].weight = 0;
             posts[_id].parent = 0;
             posts[_id].timestamp = 0;
             posts[_id].votingMechanism = 0;
         
     }
     
-    function postComment( uint _parent, string memory _value, uint votingMechanism) public arkVoter(msg.sender) {
+    function postComment( uint _parent, string memory _value, uint votingMechanism, uint wt) public arkVoter(msg.sender) {
         id += 1;
         posts[id].user = msg.sender;
         posts[id].parent = _parent;
         posts[id].value = _value; 
         posts[id].upvote = 0;
         posts[id].downvote = 0;
+        posts[id].weight = wt;
         posts[id].timestamp = now;
         posts[id].votingMechanism = votingMechanism;
         commentIDs.push(id);
@@ -171,6 +178,7 @@ contract Voting {
 
     function upvote(uint _id, uint vote) public arkVoter(msg.sender) {
         address user = msg.sender;
+        require(posts[_id].user != address(0),"Invalid Id");
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
@@ -182,6 +190,7 @@ contract Voting {
     function downvote(uint _id, uint vote) public arkVoter(msg.sender) {
         
         address user = msg.sender;
+        require(posts[_id].user != address(0),"Invalid Id");
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
@@ -191,36 +200,42 @@ contract Voting {
     }
     
 
-    function upvoteQuadratic(address user, uint _id, uint vote) internal {
+    function upvoteQuadratic(address user, uint _id, uint point) internal {
             
-        uint point = vote * vote;
+        // uint point = vote * vote;
         uint balance = mem.getVotingPoints(user);
         
         if (point > balance) {
             revert("Not enough points");
         }
         
-        memberVote[_id][user].upvotes = vote;
+        memberVote[_id][user].upvotes += 1;
        
         
         mem.subVotingPoints(user, point);
         
-        posts[_id].upvote += vote;
+        posts[_id].upvote += 1;
+        
+        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes.push(_id);
+        else memberVote[_id][user].votes.push(_id);
     }
     
-    function downvoteQuadratic(address user, uint _id, uint vote) internal {
+    function downvoteQuadratic(address user, uint _id, uint point) internal {
         
-        uint point = vote * vote;
+        // uint point = vote * vote;
         uint balance = mem.getVotingPoints(user);
         
         if (point > balance) {
             revert("Not enough points");
         }
         
-        memberVote[_id][user].downvotes = vote;
+        memberVote[_id][user].downvotes += 1 ;
         
         mem.subVotingPoints(user, point);
         
-        posts[_id].downvote += vote;
+        posts[_id].downvote += 1;
+        
+        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes.push(_id);
+        else memberVote[_id][user].votes.push(_id);
     }
 }

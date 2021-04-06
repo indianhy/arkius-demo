@@ -1,5 +1,17 @@
 const contractABI = `[
 	{
+		"inputs": [
+			{
+				"internalType": "contract Membership",
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
 		"constant": false,
 		"inputs": [
 			{
@@ -10,6 +22,11 @@ const contractABI = `[
 			{
 				"internalType": "uint256",
 				"name": "votingMechanism",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "wt",
 				"type": "uint256"
 			}
 		],
@@ -23,6 +40,21 @@ const contractABI = `[
 		],
 		"payable": false,
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "allPosts",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -61,78 +93,6 @@ const contractABI = `[
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_parent",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_value",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "votingMechanism",
-				"type": "uint256"
-			}
-		],
-		"name": "postComment",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "contract Membership",
-				"name": "_address",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_id",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "vote",
-				"type": "uint256"
-			}
-		],
-		"name": "upvote",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "allPosts",
-		"outputs": [
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"constant": true,
 		"inputs": [
 			{
@@ -145,6 +105,11 @@ const contractABI = `[
 		"outputs": [
 			{
 				"components": [
+					{
+						"internalType": "uint256",
+						"name": "weight",
+						"type": "uint256"
+					},
 					{
 						"internalType": "address",
 						"name": "user",
@@ -189,6 +154,11 @@ const contractABI = `[
 						"internalType": "uint256",
 						"name": "hasDownvoted",
 						"type": "uint256"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "votes",
+						"type": "uint256[]"
 					}
 				],
 				"internalType": "struct Voting.returnPost",
@@ -258,6 +228,36 @@ const contractABI = `[
 		"type": "function"
 	},
 	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_parent",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_value",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "votingMechanism",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "wt",
+				"type": "uint256"
+			}
+		],
+		"name": "postComment",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"constant": true,
 		"inputs": [
 			{
@@ -282,6 +282,11 @@ const contractABI = `[
 				"internalType": "string",
 				"name": "value",
 				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "weight",
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
@@ -456,6 +461,26 @@ const contractABI = `[
 		],
 		"payable": false,
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "vote",
+				"type": "uint256"
+			}
+		],
+		"name": "upvote",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]`

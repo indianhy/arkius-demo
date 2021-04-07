@@ -42,7 +42,7 @@ contract Voting {
     struct member {
         uint upvotes;
         uint downvotes;
-        uint[] votes;
+        uint votes;
     }
     
     struct returnPost {
@@ -56,7 +56,7 @@ contract Voting {
         uint votingMechanism;
         uint hasUpvoted;
         uint hasDownvoted;
-        uint[] votes;
+        uint votes;
     }
     
     uint256 id = 0;
@@ -96,7 +96,7 @@ contract Voting {
     }
     
     function getPost(uint _id) public view arkMember(msg.sender) returns(returnPost memory) {
-        returnPost memory rpst = returnPost(posts[_id].weight, posts[_id].user, posts[_id].value, posts[_id].upvote, posts[_id].parent, posts[_id].timestamp, posts[_id].downvote, posts[_id].votingMechanism, memberVote[id][msg.sender].upvotes, memberVote[_id][msg.sender].downvotes, memberVote[id][msg.sender].votes);
+        returnPost memory rpst = returnPost(posts[_id].weight, posts[_id].user, posts[_id].value, posts[_id].upvote, posts[_id].parent, posts[_id].timestamp, posts[_id].downvote, posts[_id].votingMechanism, memberVote[_id][msg.sender].upvotes, memberVote[_id][msg.sender].downvotes, memberVote[_id][msg.sender].votes);
         return rpst;
     } 
     
@@ -182,7 +182,7 @@ contract Voting {
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes.length);
+            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes);
             upvoteQuadratic(user, _id, postWeight);
         }
         else upvoteQuadratic(user, _id, posts[_id].weight);
@@ -195,7 +195,7 @@ contract Voting {
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes.length);
+            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes);
             downvoteQuadratic(user, _id, postWeight);
         }
         else downvoteQuadratic(user, _id, posts[_id].weight);
@@ -218,8 +218,8 @@ contract Voting {
         
         posts[_id].upvote += 1;
         
-        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes.push(_id);
-        else memberVote[_id][user].votes.push(_id);
+        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes += 1;
+        else memberVote[_id][user].votes += 1;
     }
     
     function downvoteQuadratic(address user, uint _id, uint point) internal {
@@ -237,7 +237,7 @@ contract Voting {
         
         posts[_id].downvote += 1;
         
-        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes.push(_id);
-        else memberVote[_id][user].votes.push(_id);
+        if (posts[_id].parent != 0) memberVote[posts[_id].parent][user].votes += 1;
+        else memberVote[_id][user].votes += 1;
     }
 }

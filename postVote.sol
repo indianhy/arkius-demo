@@ -176,27 +176,29 @@ contract Voting {
             return (int(posts[_id].upvote) - int(posts[_id].downvote));
     }
 
-    function upvote(uint _id, uint vote) public arkVoter(msg.sender) {
+    function upvote(uint _id) public arkVoter(msg.sender) {
         address user = msg.sender;
         require(posts[_id].user != address(0),"Invalid Id");
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            upvoteQuadratic(user, _id, vote);
+            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes.length);
+            upvoteQuadratic(user, _id, postWeight);
         }
-        else upvoteQuadratic(user, _id, 1);
+        else upvoteQuadratic(user, _id, posts[_id].weight);
     }
     
-    function downvote(uint _id, uint vote) public arkVoter(msg.sender) {
+    function downvote(uint _id) public arkVoter(msg.sender) {
         
         address user = msg.sender;
         require(posts[_id].user != address(0),"Invalid Id");
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            downvoteQuadratic(user, _id, vote);
+            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes.length);
+            downvoteQuadratic(user, _id, postWeight);
         }
-        else downvoteQuadratic(user, _id, 1);
+        else downvoteQuadratic(user, _id, posts[_id].weight);
     }
     
 

@@ -16,10 +16,18 @@
             /* Should be removed. Only for demonstration */
         }
 
-        .left,
-        .right {
+        .left, .right {
             width: 20%;
             height: 100%;
+        }
+
+        .hide {
+            display: none;
+        }
+                
+        .myDIV:hover + .hide {
+            display: block;
+            color: red;
         }
 
         .info {
@@ -105,8 +113,8 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0x950Cc5c67c5364A02B8d463f41bfD2CDaF54C83d";
-        let membershipAddress = "0x2B2CDfDD7CDc2D4580E8142C9C74BB39aF86B6B5";
+        let postVoteAddress = "0xDA5f5B01D5fa3386aAE94809718dCDc86c3f5c95";
+        let membershipAddress = "0x6aaE7f6aBDD8bEe56F939d74fCF9B1F1535003A4";
 
         let senderAccount;
         let owner;
@@ -184,6 +192,8 @@
             <form onsubmit=handleSendPost(event) class="container">
               <div class="card">
                 <h3>Create Post</h3>
+                <label for="input_weight">Weight: </label>
+                <input id="weight-input" required="required"  name="weight-input" style="display:inline" type="number" min="1" max="100" defaultValue="1" step="1" ><br><br>
                 <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
                 <br><br>
                 <label> Voting Method </label><br>
@@ -216,19 +226,19 @@
 
                 handleDisplayStatus().then( (posts) => {
                         handleDisplayComment().then( (posts) => {
-                        for (var i = posts.length - 1; i >= 0; i--) {
-                        let input = document.getElementById(`weight-input${posts[i]}`);
-                        let log = document.getElementById(`voteWeight${posts[i]}`);
+                            for (var i = posts.length - 1; i >= 0; i--) {
+                                let input = document.getElementById(`weight-input${posts[i]}`);
+                                let log = document.getElementById(`voteWeight${posts[i]}`);
 
-                        input.oninput = handleInput;
+                                input.oninput = handleInput;
 
-                        function handleInput(e) {
-                            console.log({ e })
-                            log.textContent = `Points : ${(e.target.value) * (e.target.value)}`;
-                        }
-                    }
-                    }
-                );
+                                function handleInput(e) {
+                                    console.log({ e })
+                                    log.textContent = `Points : ${(e.target.value) * (e.target.value)}`;
+                                }
+                            }
+                        });
+
                         for (var i = posts.length - 1; i >= 0; i--) {
                         let input = document.getElementById(`weight-input${posts[i]}`);
                         let log = document.getElementById(`voteWeight${posts[i]}`);
@@ -299,6 +309,13 @@
                 if (userPaid && KYCdone){
                     if (singlePost.parent==0)
                     {
+                        console.log(userVoteCount)
+                        const postWeight = singlePost.weight;
+                        const userVoted = userVoteCount.votes;
+                        console.log("Length", userVoted)
+                        let pointsReq = "";
+                        if (singlePost.votingMechanism == 1) pointsReq = postWeight;
+                        else if (singlePost.votingMechanism == 2) pointsReq = postWeight + userVoted*postWeight;
                         allPosts[posts[i]]=singlePost;
                         contractHtml = `
                         <div class="card">
@@ -310,13 +327,14 @@
                         <br><br>
 
                         <div >${singlePost.value}</div>
-                        <div class="container">                  
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
+                        <div class="container">   
+                            <div class="hide">Point Required: ${pointsReq}</div>               
+                            <button class="myDIV" id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
+                            <button class="myDIV" id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
                             <br> <br>
-                            <input id="weight-input${posts[i]}"  name="weight-input${posts[i]}" style="display:block" type="number" min="1" max="100" defaultValue="1" step="1" >
-                            <label id = "voteWeight${posts[i]}" style="color:red"></label>
+                            
+                            <!-- <label id = "voteWeight${posts[i]}" style="color:red"></label> -->
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
@@ -331,20 +349,20 @@
                         target.innerHTML = target.innerHTML + contractHtml;
             const voteButton = document.getElementById(`upvote${posts[i]}`);
             const voteButton1 = document.getElementById(`downvote${posts[i]}`);
-            const voteText = document.getElementsByName(`weight-input${posts[i]}`);
-            console.log({voteText:voteText[0]})
-            if (singlePost.votingMechanism != 1) voteText[0].style.display = "none";
+            // const voteText = document.getElementsByName(`weight-input${posts[i]}`);
+            // console.log({voteText:voteText[0]})
+            // if (singlePost.votingMechanism != 1) voteText[0].style.display = "none";
             
             if (userVoteCount.upvotes>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText[0].style.display = "none";
+                // voteText[0].style.display = "none";
                 voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
             }
             if (userVoteCount.downvotes>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText[0].style.display = "none";
+                // voteText[0].style.display = "none";
                 voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
             }
             
@@ -643,10 +661,12 @@
             }
             if (message.length > 0) {
                 const postStatus = document.getElementById("post_status");
+                const weight = document.getElementById("weight-input").value;
+                console.log(weight)
                 postStatus.disabled = true;
                 postStatus.innerText = "Posting...";
                 console.log("Posting");
-                await pVcontract.methods.addPost(message, i).send({ from: senderAccount });
+                await pVcontract.methods.addPost(message, i, weight).send({ from: senderAccount });
                 console.log("Posted");
                 render();
             }

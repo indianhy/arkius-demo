@@ -79,11 +79,6 @@ const contractABI = `[
 				"internalType": "uint256",
 				"name": "_id",
 				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "vote",
-				"type": "uint256"
 			}
 		],
 		"name": "downvote",
@@ -469,11 +464,6 @@ const contractABI = `[
 			{
 				"internalType": "uint256",
 				"name": "_id",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "vote",
 				"type": "uint256"
 			}
 		],

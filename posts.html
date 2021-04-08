@@ -292,7 +292,7 @@
             for (var i = posts.length - 1; i >= 0; i--) {
                 const singlePost = await pVcontract.methods.getPost(posts[i]).call({ from: senderAccount});
                 if (singlePost.votingMechanism == 0) continue;
-                const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
+                // const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
 
                 const target = document.querySelector("#app");
                 let contractHtml = "";
@@ -304,7 +304,7 @@
                         // console.log(userVoteCount.upvotes)
                         // console.log(userVoteCount.votes)
                         const postWeight = singlePost.weight;
-                        const userVoted = userVoteCount.votes;
+                        const userVoted = singlePost.votes;
                         console.log("Length", userVoted)
                         let pointsReq = "";
                         if (singlePost.votingMechanism == 1) pointsReq = postWeight;
@@ -347,13 +347,13 @@
             // console.log({voteText:voteText[0]})
             // if (singlePost.votingMechanism != 1) voteText[0].style.display = "none";
             
-            if (userVoteCount.upvotes>0) {
+            if (singlePost.hasUpvoted>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
                 voteText.style.display = "none";
                 voteButton.innerHTML = `Upvoted`;
             }
-            if (userVoteCount.downvotes>0) {
+            if (singlePost.hasDownvoted>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
                 voteText.style.display = "none";
@@ -400,13 +400,13 @@
                 const timestamp = setTime(singlePost);     
                 // console.log({singlePost});
 
-                const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
+                // const userVoteCount = await pVcontract.methods.memberVote(posts[i], senderAccount).call();
 
                 if (userPaid && KYCdone){
                     if (singlePost.parent!=0)
                     {
                         const postWeight = singlePost.weight;
-                        const userVoted = userVoteCount.votes;
+                        const userVoted = singlePost.votes;
                         let pointsReq = "";
                         if (singlePost.votingMechanism == 1) pointsReq = postWeight;
                         else if (singlePost.votingMechanism == 2) pointsReq = postWeight + userVoted*postWeight;
@@ -438,18 +438,18 @@
                         // console.log({voteText:voteText[0]})
                         // if (singlePost.votingMechanism != 1) voteText[0].style.display = "none";
                         
-                        if (userVoteCount.upvotes>0) {
+                        if (singlePost.hasUpvoted>0) {
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
                             voteText.style.display = "none";
-                            voteButton.innerHTML = `Upvotes: ${userVoteCount.upvotes}`;
+                            voteButton.innerHTML = `Upvotes: ${singlePost.hasUpvoted}`;
                         }
                         
-                        if (userVoteCount.downvotes>0) {
+                        if (singlePost.hasDownvoted>0) {
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
                             voteText.style.display = "none";
-                            voteButton1.innerHTML = `Downvotes: ${userVoteCount.downvotes}`;
+                            voteButton1.innerHTML = `Downvotes: ${singlePost.hasDownvoted}`;
                         }
 
                         // console.log({selectElement: document.getElementById(`weight-input${posts[i]}`)})

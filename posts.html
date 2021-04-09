@@ -115,8 +115,8 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0x4b98bB32dc756A616983E056B6da65BA3082dB88";
-        let membershipAddress = "0x6aaE7f6aBDD8bEe56F939d74fCF9B1F1535003A4";
+        let postVoteAddress = "0x6D0919cd4a03d807036f43CBcA220f3814A2f231";
+        let membershipAddress = "0x1045a3172b78ABB5A222060Bc47FE0cE21CcbEf3";
 
         let senderAccount;
         let owner;
@@ -318,6 +318,7 @@
                         <label name="User" ><strong>User ID:</strong> ${singlePost.user}</label> 
                         <br>
                         <label name="votemech" ><strong>Voting Method:</strong> ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
+                        <label name="weightDisplay" ><strong>Weight:</strong> ${singlePost.weight}</label><br>
                         <label name="time" ><strong>Time:</strong> ${timestamp}</label>
                         <br><br>
 
@@ -352,13 +353,13 @@
             if (singlePost.hasUpvoted>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText.style.display = "none";
+                // voteText.style.display = "none";
                 voteButton.innerHTML = `Upvoted`;
             }
             if (singlePost.hasDownvoted>0) {
                 voteButton.disabled = true;
                 voteButton1.disabled = true;
-                voteText.style.display = "none";
+                // voteText.style.display = "none";
                 voteButton1.innerHTML = `Downvoted`;
             }
             
@@ -419,6 +420,7 @@
                         <p id="id"></p>
                         <label name="User" class="info">User ID: ${singlePost.user}</label> <br>
                         <label name="votemech" class="info">Voting Method: ${singlePost.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
+                        <label name="weightDisplay" class="info" >Weight: ${singlePost.weight}</label><br>
                         <label name="time" class="info">Time: ${timestamp}</label>
                         <br><br>
 
@@ -443,14 +445,14 @@
                         if (singlePost.hasUpvoted>0) {
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
-                            voteText.style.display = "none";
+                            // voteText.style.display = "none";
                             voteButton.innerHTML = `Upvoted`;
                         }
                         
                         if (singlePost.hasDownvoted>0) {
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
-                            voteText.style.display = "none";
+                            // voteText.style.display = "none";
                             voteButton1.innerHTML = `Downvoted`;
                         }
 
@@ -483,6 +485,8 @@
             const receipt = await pVcontract.methods.upvote(msg).send({ from: senderAccount });
             // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
             // handleSetPoint((Meminfo.points-(value*value)));
+            // const votingMech = await Memcontract.methods.getVotingPoints({from: senderAccount}).call();
+            // console.log(votingMech);
             if (receipt.status == false) {
                 voteButton1.disabled = true;
                 voteButton.disabled = true;
@@ -492,7 +496,7 @@
                 return;
             }
 
-            // votingPoints.innerText = `Voting Points : ${votingPointsN-votingMech}`
+            // votingPoints.innerText = `Voting Points : ${votingMech}`
             voteButton1.innerText = `Downvote`;
             voteButton.innerText = `Upvoted`;
                 //value.innerText = "";
@@ -521,6 +525,8 @@
                 const receipt = await pVcontract.methods.downvote( msg ).send({ from: senderAccount });
                 // const singlePost = await pVcontract.methods.getPost(msg, senderAccount).call();
                 // handleSetPoint((Meminfo.points-(value*value)));
+                // const votingMech = await Memcontract.methods.getVotingPoints({from: senderAccount}).call();
+                // console.log(votingMech);
                 if (receipt.status == false) {
                     voteButton1.disabled = true;
                     voteButton.disabled = true;
@@ -530,7 +536,7 @@
                     return;
                 }
                 console.log(receipt);
-                // votingPoints.innerText = `Voting Points : ${votingPointsN - votingMech}`
+                // votingPoints.innerText = `Voting Points : ${votingMech}`
                 voteButton1.innerText = `Upvote`;
                 voteButton.innerText = `Downvoted`;
                         
@@ -616,6 +622,7 @@
                     <p id="id"></p>
                         <label name="User" class="info">${cmntDetail.user}</label> <br>
                         <label name="votemech" class="info">Voting Method: ${cmntDetail.votingMechanism==1?"Quadratic":"Conventional"}</label><br>
+                        <label name="weightDisplay" class="info">Weight: ${cmntDetail.weight}</label><br>
                         <label name="time" class="info">${setTime(cmntDetail)}</label>
                         <br><br>
                         

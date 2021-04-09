@@ -25,9 +25,11 @@
             display: none;
         }
                 
-        button.myDIV:hover + .hide {
-            display: block;
-            color: red;
+        button.myDIV:hover {
+            /* display: block;
+            color: red; */
+            border: 1px solid #888;
+            background-color: #ddd;
         }
 
         .info {
@@ -113,7 +115,7 @@
         });
         const web3 = new Web3(magic.rpcProvider);
 
-        let postVoteAddress = "0xE320fAA17234840589E6f6924e8598bd7c7c3E45";
+        let postVoteAddress = "0x4b98bB32dc756A616983E056B6da65BA3082dB88";
         let membershipAddress = "0x6aaE7f6aBDD8bEe56F939d74fCF9B1F1535003A4";
 
         let senderAccount;
@@ -196,9 +198,9 @@
                         <textarea cols="40" rows="5" id="name" name="status" class="full-width" required="required" placeholder="Enter your post" style="resize:none; height:120px; width:100%; padding: 5%;" ></textarea>
                         <br><br>
                         <label> Voting Method </label><br>
-                        <input type="checkbox" id="weight1" name="voting" value="Quadratic" onclick="onlyOne(this)">
+                        <input type="checkbox" id="weight1" name="votingPost" value="Quadratic" onclick="onlyOne(this)">
                         <label for="weight1"> Quadratic </label><br>
-                        <input type="checkbox" id="weight2" name="voting" value="Conventional" onclick="onlyOne(this)">
+                        <input type="checkbox" id="weight2" name="votingPost" value="Conventional" onclick="onlyOne(this)">
                         <label for="weight2"> Conventional </label><br>
                         <div class="container">
                             <button type="submit" value="Post" id="post_status">Post</button>
@@ -321,21 +323,21 @@
 
                         <div >${singlePost.value}</div>
                         <div class="container">                  
-                            <button class="myDIV" id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
+                            <button class="myDIV" title="Points Required: ${await pVcontract.methods.getPoints(posts[i])}" id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button class="myDIV" id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
-                            <div id="pntreq${posts[i]}" style="color:red" >Point Required: ${pointsReq}</div>
-                            <!-- <label id = "voteWeight${posts[i]}" style="color:red"></label> -->
+                            <button class="myDIV" title="Points Required: " id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
+                            <!-- <div id="pntreq${posts[i]}" style="color:red" >Point Required: ${pointsReq}</div>
+                            <label id = "voteWeight${posts[i]}" style="color:red"></label> -->
                             
                             </div>
                             <div class="container" id="comment${posts[i]}"></div>
-                            <textarea id="cmntname${posts[i]}" class="full-width" required="required" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
+                            <textarea id="cmntname${posts[i]}" class="full-width" placeholder="Comment..." style="resize:none; width:100%; padding: 1%;" ></textarea>
                             <label for="input_weight">Weight: </label>
-                            <input name="weight-input" required="required"  id="weight-input${posts[i]}" style="display:inline" type="number" min="1" max="100" defaultValue="1" step="1" ><br><br>
+                            <input name="weight-input${posts[i]}" id="weight-input${posts[i]}" style="display:inline" type="number" min="1" max="100" defaultValue="1" step="1" ><br><br>
                             <label> Voting Method </label><br>
-                            <input type="checkbox" id="cmntweight1${posts[i]}" name="voting" value="Quadratic" onclick="onlyOne(this)">
+                            <input type="checkbox" id="cmntweight1${posts[i]}" name="voting${posts[i]}" value="Quadratic" onclick="onlyOne(this)">
                             <label for="weight1"> Quadratic </label><br>
-                            <input type="checkbox" id="cmntweight2${posts[i]}" name="voting" value="Conventional" onclick="onlyOne(this)">
+                            <input type="checkbox" id="cmntweight2${posts[i]}" name="voting${posts[i]}" value="Conventional" onclick="onlyOne(this)">
                             <label for="weight2"> Conventional </label><br><br>
                             <button  id="cmnt${posts[i]}" onclick=handlecomment(${posts[i]})>Comment</button>
                         </div>`;
@@ -422,10 +424,10 @@
 
                         <div class="info">${singlePost.value}</div>
                         <div class="container">
-                            <button id="upvote${posts[i]}" onclick=handleUpvote(${posts[i]})>Upvotes</button>
+                            <button id="upvote${posts[i]}" title="Points Required: " onclick=handleUpvote(${posts[i]})>Upvotes</button>
                             <button id="vote${posts[i]}" onclick=handleVote(${posts[i]})>Votes</button>
-                            <button id="downvote${posts[i]}" onclick=handleDownvote(${posts[i]})>Downvotes</button>
-                            <div id="pntreq${posts[i]}" style="color:red" >Point Required: ${pointsReq}</div>
+                            <button id="downvote${posts[i]}" title="Points Required: " onclick=handleDownvote(${posts[i]})>Downvotes</button>
+                            <!-- <div id="pntreq${posts[i]}" style="color:red" >Point Required: ${pointsReq}</div> -->
                             <p id="cmnt${posts[i]}"></p>
                             </div>
                             <div class="container1" id="comment${posts[i]}"></div>
@@ -442,14 +444,14 @@
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
                             voteText.style.display = "none";
-                            voteButton.innerHTML = `Upvotes: ${singlePost.hasUpvoted}`;
+                            voteButton.innerHTML = `Upvoted`;
                         }
                         
                         if (singlePost.hasDownvoted>0) {
                             voteButton.disabled = true;
                             voteButton1.disabled = true;
                             voteText.style.display = "none";
-                            voteButton1.innerHTML = `Downvotes: ${singlePost.hasDownvoted}`;
+                            voteButton1.innerHTML = `Downvoted`;
                         }
 
                         // console.log({selectElement: document.getElementById(`weight-input${posts[i]}`)})
@@ -564,8 +566,18 @@
             const weight = document.getElementById(`weight-input${prntId}`).value;
             const cmntvalue = document.getElementById(`cmntname${prntId}`).value;                                                                                                                                                                                                                                                                                                                                                                                                                         
             const button = document.getElementById(`cmnt${prntId}`);
-            const checkboxes = document.getElementsByName(`voting`);
+            const checkboxes = document.getElementsByName(`voting${prntId}`);
             console.log("1", checkboxes);
+            if (cmntvalue == null || cmntvalue == ""  ) {
+                console.log("2", cmntvalue);
+                window.alert("Invalid Comment Value");
+                return;
+            }
+            if (weight == null || weight == "" ){
+                console.log("2", weight);
+                window.alert("Invalid Comment Weight");
+                return;
+            }
             var i = 0;
             for (var j=1; j<=checkboxes.length; j++) {
                 var checkBox = document.getElementById(`cmntweight${j}${prntId}`);
@@ -578,11 +590,6 @@
             }
             if (i == 0) {
                 window.alert("Select Voting Mechanism");
-                return;
-            }
-            if (cmntvalue == null || cmntvalue == ""  ) {
-                console.log("2", cmntvalue);
-                window.alert("Invalid Comment Value");
                 return;
             }
             button.disabled = true;
@@ -615,26 +622,26 @@
                     <div class="info">${cmntDetail.value}</div>
                     <div class="container">
 
-                        <button id="upvote${cmntId[cmntId.length-1]}" onclick=handleUpvote(${cmntId[cmntId.length-1]})>Upvote</button>
+                        <button class="myDIV" id="upvote${cmntId[cmntId.length-1]}" title="Points Required: " onclick=handleUpvote(${cmntId[cmntId.length-1]})>Upvote</button>
                         <button id="vote${cmntId[cmntId.length-1]}" onclick=handleVote(${cmntId[cmntId.length-1]})>Votes</button>
-                        <button id="downvote${cmntId[cmntId.length-1]}" onclick=handleDownvote(${cmntId[cmntId.length-1]})>Downvote</button><br><br>
-                        <div id="pntreq${cmntId[cmntId.length-1]}" style="color:red" >Point Required: ${pointsReq}</div>
+                        <button class="myDIV" id="downvote${cmntId[cmntId.length-1]}" title="Points Required: " onclick=handleDownvote(${cmntId[cmntId.length-1]})>Downvote</button><br><br>
+                        <!-- <div id="pntreq${cmntId[cmntId.length-1]}" style="color:red" >Point Required: ${pointsReq}</div> --> 
                         <p id="cmnt${cmntId[cmntId.length-1]}"></p>
                     </div>
                     <div class="container1" id="comment${cmntId[cmntId.length-1]}"></div>
                 </div>`;
                 const temp1 = document.getElementById(`comment${cmntDetail.parent}`);
                 temp1.innerHTML = commentHtml + temp1.innerHTML;
-                const voteText = document.getElementsByName(`weight-input${cmntId[cmntId.length-1]}`);
-                console.log({voteText:voteText})
-                if (cmntDetail.votingMechanism != 1) voteText[0].style.display = "none";
+                // const voteText = document.getElementsByName(`weight-input${cmntId[cmntId.length-1]}`);
+                // console.log({voteText:voteText})
+                // if (cmntDetail.votingMechanism != 1) voteText[0].style.display = "none";
             // render();
         }
 
         const handleSendPost = async e => {
             e.preventDefault();
             const message = new FormData(e.target).get("status");
-            var checkboxes = document.getElementsByName('voting')
+            var checkboxes = document.getElementsByName('votingPost')
             // console.log(checkboxes.length); return;
             var i = 0;
             for (var j=1; j<=checkboxes.length; j++) {
@@ -649,6 +656,7 @@
                 window.alert("Select Voting Mechanism");
                 return;
             }
+            console.log(i)
             if (message.length > 0) {
                 const postStatus = document.getElementById("post_status");
                 const weight = document.getElementById("weight-input").value;

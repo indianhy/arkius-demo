@@ -175,6 +175,10 @@ contract Voting {
     function totalVote(address user, uint _id) public arkVoter(user) view returns(int) {
             return (int(posts[_id].upvote) - int(posts[_id].downvote));
     }
+    
+    function getPoints(uint _id) public view returns(uint) {
+        return memberVote[_id][msg.sender].votes;
+    }
 
     function upvote(uint _id) public arkVoter(msg.sender) {
         address user = msg.sender;
@@ -182,8 +186,8 @@ contract Voting {
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes);
-            upvoteQuadratic(user, _id, postWeight);
+            memberVote[_id][user].votes += posts[_id].weight;
+            upvoteQuadratic(user, _id, memberVote[_id][user].votes);
         }
         else upvoteQuadratic(user, _id, posts[_id].weight);
     }
@@ -195,8 +199,9 @@ contract Voting {
         require(memberVote[_id][user].downvotes == 0 && memberVote[_id][user].upvotes == 0,"Already Voted");
         uint votingMechanism = posts[_id].votingMechanism;
         if(votingMechanism == 1){
-            uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes);
-            downvoteQuadratic(user, _id, postWeight);
+            // uint postWeight = posts[_id].weight + (posts[_id].weight*memberVote[_id][user].votes);
+            memberVote[_id][user].votes += posts[_id].weight;
+            downvoteQuadratic(user, _id, memberVote[_id][user].votes);
         }
         else downvoteQuadratic(user, _id, posts[_id].weight);
     }

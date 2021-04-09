@@ -1,5 +1,17 @@
 const contractABI = `[
 	{
+		"inputs": [
+			{
+				"internalType": "contract Membership",
+				"name": "_address",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
 		"constant": false,
 		"inputs": [
 			{
@@ -28,6 +40,21 @@ const contractABI = `[
 		],
 		"payable": false,
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "allPosts",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -61,49 +88,7 @@ const contractABI = `[
 		"type": "function"
 	},
 	{
-		"constant": false,
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_parent",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_value",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "votingMechanism",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "wt",
-				"type": "uint256"
-			}
-		],
-		"name": "postComment",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "contract Membership",
-				"name": "_address",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
-	{
-		"constant": false,
+		"constant": true,
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -111,21 +96,12 @@ const contractABI = `[
 				"type": "uint256"
 			}
 		],
-		"name": "upvote",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "allPosts",
+		"name": "getPoints",
 		"outputs": [
 			{
-				"internalType": "uint256[]",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint256[]"
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -270,6 +246,36 @@ const contractABI = `[
 		],
 		"payable": false,
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_parent",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_value",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "votingMechanism",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "wt",
+				"type": "uint256"
+			}
+		],
+		"name": "postComment",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -476,6 +482,21 @@ const contractABI = `[
 		],
 		"payable": false,
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_id",
+				"type": "uint256"
+			}
+		],
+		"name": "upvote",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]`
